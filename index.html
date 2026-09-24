@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Match Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EDF1EC; --card:#FFFFFF; --ink:#14213D; --muted:#566074; --line:#CFD7CD; --soft:#E2E8E0;
+  --pitch:#2E7A4B; --pitch2:#2A7045; --bib:#F2C230; --bib-ink:#14213D; --red:#C8322D; --go:#1F7A45;
+  --font:'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#101B15; --card:#18261E; --ink:#E8EEE6; --muted:#9AA79E; --line:#2C3D33; --soft:#20322A;
+    --pitch:#26653F; --pitch2:#225C39; --red:#E3574F; --go:#3FA66B; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#101B15; --card:#18261E; --ink:#E8EEE6; --muted:#9AA79E; --line:#2C3D33; --soft:#20322A;
+  --pitch:#26653F; --pitch2:#225C39; --red:#E3574F; --go:#3FA66B; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;background:var(--paper);color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.45;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--bib);outline-offset:2px}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--paper);border-bottom:1px solid var(--line);padding:10px 16px}
+.top-in{max-width:760px;margin:0 auto;display:flex;align-items:baseline;gap:12px}
+.top h1{margin:0;font-size:24px;font-weight:800;font-stretch:78%;letter-spacing:-.01em}
+.top .sub{color:var(--muted);font-size:15px;margin-left:auto;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top .sub b{color:var(--ink);font-stretch:75%;font-size:20px}
+
+main{max-width:760px;margin:0 auto;padding:8px 14px 110px}
+section{display:none}
+section.on{display:block}
+
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.tabs-in{max-width:760px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+.tabs button{min-height:62px;border:none;background:none;font-size:16px;font-weight:700;font-stretch:85%;color:var(--muted);border-top:4px solid transparent;cursor:pointer}
+.tabs button.on{color:var(--ink);border-top-color:var(--bib)}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0}
+h2{margin:0 0 4px;font-size:22px;font-weight:800;font-stretch:80%}
+h3{margin:14px 0 8px;font-size:18px;font-weight:800;font-stretch:85%}
+.lead{margin:0 0 12px;color:var(--muted);font-size:15px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:420px){.grid2:not(.tight){grid-template-columns:1fr}}
+.grid2.tight{margin:4px 0 0}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.pair .btn{min-height:56px;font-size:18px;padding:0 8px}
+.field label{display:block;font-size:14px;font-weight:600;color:var(--muted);margin-bottom:4px}
+
+.in{width:100%;min-height:50px;border:1.5px solid var(--line);border-radius:10px;background:var(--paper);padding:10px 12px;font-size:17px}
+.in:focus{border-color:var(--ink);outline:none}
+textarea.in{min-height:110px;resize:vertical;line-height:1.5}
+select.in{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 20px) 50%,calc(100% - 14px) 50%;background-size:6px 6px;background-repeat:no-repeat;padding-right:34px}
+
+.btn{min-height:48px;padding:0 18px;border-radius:10px;border:1.5px solid var(--ink);background:transparent;font-size:17px;font-weight:700;cursor:pointer;white-space:nowrap}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn.go{background:var(--go);border-color:var(--go);color:#fff}
+.btn.stop{background:var(--red);border-color:var(--red);color:#fff}
+.btn.warn{border-color:var(--red);color:var(--red)}
+.btn.small{min-height:42px;font-size:15px;padding:0 13px}
+.btn.big{min-height:60px;font-size:20px;flex:1}
+.btn:disabled{opacity:.4}
+.icon{min-width:44px;min-height:44px;border:none;background:none;color:var(--muted);cursor:pointer;display:grid;place-items:center;border-radius:10px;font-size:15px;font-weight:600}
+.icon:hover{background:var(--soft)}
+.dl-only{display:none}
+body.dl-on .dl-only{display:inline-block}
+
+/* squad */
+.srow{display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--line)}
+.srow:last-child{border-bottom:none}
+.avail{flex:1;display:flex;align-items:center;gap:14px;background:none;border:none;text-align:left;min-height:60px;cursor:pointer;padding:0}
+.tick{width:32px;height:32px;flex:none;border-radius:8px;border:2px solid var(--line);display:grid;place-items:center;color:#fff}
+.in .tick,.srow.in .tick,.job.done .tick{background:var(--go);border-color:var(--go)}
+.num{width:30px;text-align:right;font-weight:800;font-stretch:72%;font-size:20px;color:var(--muted)}
+.pname{font-size:19px;font-weight:700}
+.srow.out .pname{color:var(--muted);text-decoration:line-through;font-weight:500}
+.srow.edit{gap:8px;padding:8px 0;flex-wrap:wrap}
+.srow.edit .in{flex:1;min-width:120px}
+.srow.edit .num-in{flex:0 0 70px;min-width:0}
+.count{font-weight:800;font-stretch:78%;font-size:20px}
+
+/* plan */
+.parts{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;margin:0 -2px}
+.part{flex:none;min-width:94px;min-height:60px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);text-align:left;padding:6px 12px;cursor:pointer}
+.part b{display:block;font-size:17px;font-stretch:85%}
+.part small{color:var(--muted);font-size:14px}
+.part.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.part.on small{color:inherit;opacity:.8}
+.part.add{border-style:dashed;color:var(--muted);font-weight:700;display:grid;place-items:center}
+.hint{margin:10px 0;padding:10px 12px;border-radius:10px;background:var(--soft);font-size:16px}
+.hint.sel{background:var(--bib);color:var(--bib-ink);font-weight:600}
+.warn-line{color:var(--red);font-weight:600;font-size:15px;margin:6px 0}
+
+.pitch-wrap{display:flex;flex-direction:column;align-items:center}
+.pitch{position:relative;width:min(100%,calc(68vh * .68));aspect-ratio:68/100;border-radius:12px;overflow:hidden;
+  background:repeating-linear-gradient(180deg,var(--pitch) 0 10%,var(--pitch2) 10% 20%)}
+.pitch svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.pitch.compact{width:min(100%,calc(52vh * .68))}
+.attack{font-size:13px;color:var(--muted);margin:4px 0 0}
+.slot{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;padding:0;width:78px;cursor:pointer;z-index:2}
+div.slot{cursor:default}
+.slot .disc{width:54px;height:54px;border-radius:50%;background:var(--bib);color:var(--bib-ink);display:grid;place-items:center;font-weight:800;font-stretch:72%;font-size:20px;border:3px solid #fff;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.slot.empty .disc{background:rgba(255,255,255,.12);border:2.5px dashed rgba(255,255,255,.9);color:#fff;font-size:15px;box-shadow:none}
+.slot .nm{background:rgba(8,18,12,.8);color:#fff;font-weight:700;font-size:14px;font-stretch:78%;padding:1px 7px;border-radius:5px;max-width:78px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slot.sel .disc{box-shadow:0 0 0 4px var(--red),0 0 0 7px #fff}
+.slot.bad .disc{background:#fff;color:var(--red);border-color:var(--red)}
+.compact .slot{width:66px}
+.compact .slot .disc{width:42px;height:42px;font-size:16px;border-width:2px}
+.compact .slot .nm{font-size:12.5px;max-width:66px}
+
+.bench{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:48px;padding:6px 16px;border-radius:999px;border:1.5px solid var(--line);background:var(--card);font-weight:700;font-size:17px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.chip .n{font-stretch:72%;color:var(--muted);font-weight:800}
+.chip.sel{background:var(--red);border-color:var(--red);color:#fff}
+.chip.sel .n{color:#fff}
+.chip.ghost{font-weight:500;font-size:15px;min-height:40px;color:var(--muted)}
+
+.changes{list-style:none;padding:0;margin:6px 0 0}
+.changes li{padding:9px 0;border-bottom:1px solid var(--line);font-size:17px}
+.changes li:last-child{border-bottom:none}
+.changes .k{display:inline-block;min-width:54px;font-size:13px;font-weight:700;color:var(--muted)}
+.none{color:var(--muted);font-size:15px;margin:6px 0}
+
+.mrow{display:grid;grid-template-columns:minmax(90px,130px) 1fr 44px;gap:10px;align-items:center;padding:5px 0}
+.mrow .bar{height:14px;background:var(--soft);border-radius:7px;overflow:hidden}
+.mrow .bar i{display:block;height:100%;background:var(--go);border-radius:7px}
+.mrow .m{text-align:right;font-weight:800;font-stretch:75%;font-variant-numeric:tabular-nums}
+.mrow.zero{color:var(--red)}
+
+/* jobs */
+.job{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.job:last-child{border-bottom:none}
+.job .tick-btn{background:none;border:none;padding:4px;cursor:pointer}
+.job .jt{flex:1;font-size:18px;padding-top:6px}
+.job.done .jt>div:first-child{text-decoration:line-through;color:var(--muted)}
+.meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.tag{font-size:14px;font-weight:700;background:var(--bib);color:var(--bib-ink);border-radius:6px;padding:1px 8px}
+.tag.plain{background:var(--soft);color:var(--muted);font-weight:600}
+
+/* match */
+.score{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;text-align:center;gap:6px}
+.score .who{font-size:16px;font-weight:700;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.score .n{font-size:64px;font-weight:800;font-stretch:70%;line-height:1}
+.score .dash{font-size:40px;color:var(--muted)}
+.clockbox{text-align:center}
+.phase{font-size:17px;font-weight:700;color:var(--muted)}
+.clock{font-size:clamp(72px,22vw,120px);font-weight:800;font-stretch:66%;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.01em;margin:4px 0 12px}
+.clock.paused{color:var(--muted)}
+.due{border:3px solid var(--red)}
+.due-title{color:var(--red)}
+.cd{font-weight:800;font-stretch:75%;font-size:22px;font-variant-numeric:tabular-nums}
+.ev{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:16px}
+.ev:last-child{border-bottom:none}
+.ev .t{font-weight:800;font-stretch:75%;min-width:52px;font-variant-numeric:tabular-nums;color:var(--muted)}
+.ev .x{flex:1}
+.ev.goal .x{font-weight:700;color:var(--go)}
+.ev.opp .x{font-weight:700;color:var(--red)}
+.ev.phase .x{font-weight:700}
+
+/* shape editor */
+.slot.shape{cursor:grab;touch-action:none}
+.slot.shape .disc{background:#fff;color:var(--ink);border-color:var(--bib);font-size:15px}
+/* whiteboard */
+.seg{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;background:var(--soft);padding:4px;border-radius:12px;margin:12px 0 8px}
+.seg button{min-height:48px;border:none;border-radius:9px;background:none;font-weight:700;font-size:16px;cursor:pointer}
+.seg button.on{background:var(--ink);color:var(--paper)}
+.swatches{margin-bottom:10px}
+.sw{width:40px;height:40px;border-radius:50%;border:2px solid var(--line);cursor:pointer;flex:none}
+.sw.on{box-shadow:0 0 0 3px var(--paper),0 0 0 5px var(--ink)}
+.toolhint{font-size:14px;color:var(--muted);flex:1;min-width:140px}
+.pitch.board{width:min(100%,calc((100vh - 230px) * .68))}
+.pitch svg#bsvg{pointer-events:auto;touch-action:none}
+.board .ln{pointer-events:none}
+.board .ln .hit{fill:none;stroke:transparent;stroke-width:3.5}
+.board.erase .ln{pointer-events:auto}
+.board.erase .ln .hit{pointer-events:stroke}
+.board.erase .ln path:not(.hit){pointer-events:none}
+.board .tok{cursor:grab}
+.board text{font-family:var(--font);font-stretch:75%;pointer-events:none}
+.board .tn{fill:#fff;stroke:rgba(0,0,0,.8);stroke-width:.7;paint-order:stroke}
+.saved{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.saved:last-child{border-bottom:none}
+.saved .x{flex:1}
+.saved small{color:var(--muted)}
+dialog.sheet{border:none;border-radius:16px;padding:18px;width:min(520px,94vw);background:var(--card);color:var(--ink)}
+dialog.sheet::backdrop{background:rgba(0,0,0,.5)}
+dialog.sheet h3{margin:0 0 12px;font-size:21px}
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:14px}
+.opts .chip{justify-content:center}
+.toast{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:12px 18px;border-radius:12px;font-weight:600;z-index:50;max-width:92vw;display:none}
+.toast.on{display:block}
+@media (prefers-reduced-motion: no-preference){ .toast.on{animation:pop .18s ease-out} @keyframes pop{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}} }
+</style>
+</head>
+<body>
+
+<header class="top"><div class="top-in"><h1 id="title">Match day</h1><div class="sub" id="sub"></div></div></header>
+
+<main>
+  <section id="squad"></section>
+  <section id="plan"></section>
+  <section id="notes"></section>
+  <section id="board"></section>
+  <section id="match"></section>
+</main>
+
+<nav class="tabs" aria-label="Sections"><div class="tabs-in">
+  <button data-act="nav" data-tab="squad">Squad</button>
+  <button data-act="nav" data-tab="plan">Plan</button>
+  <button data-act="nav" data-tab="notes">Jobs</button>
+  <button data-act="nav" data-tab="board">Board</button>
+  <button data-act="nav" data-tab="match">Match</button>
+</div></nav>
+
+<dialog class="sheet" id="sheet"><h3 id="sheetT"></h3><div id="sheetB"></div></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+// ───────── formations (x,y in % of pitch; top = attacking end) ─────────
+const B4=[['LB',14,70],['CB',37,75],['CB',63,75],['RB',86,70]];
+const B3=[['CB',26,74],['CB',50,77],['CB',74,74]];
+const GK=[['GK',50,90]];
+const B5=[['LWB',10,64],['CB',30,76],['CB',50,78],['CB',70,76],['RWB',90,64]];
+const M4=[['LM',13,52],['CM',37,56],['CM',63,56],['RM',87,52]];
+const FORMATIONS={
+  11:{
+    '4-4-2':[...GK,...B4,['LM',14,46],['CM',37,51],['CM',63,51],['RM',86,46],['ST',37,21],['ST',63,21]],
+    '4-3-3':[...GK,...B4,['CM',28,48],['DM',50,56],['CM',72,48],['LW',16,23],['ST',50,17],['RW',84,23]],
+    '4-2-3-1':[...GK,...B4,['DM',36,57],['DM',64,57],['LW',15,36],['AM',50,38],['RW',85,36],['ST',50,16]],
+    '4-1-4-1':[...GK,...B4,['DM',50,60],['LM',14,40],['CM',37,44],['CM',63,44],['RM',86,40],['ST',50,17]],
+    '3-5-2':[...GK,...B3,['LWB',11,48],['CM',31,50],['DM',50,58],['CM',69,50],['RWB',89,48],['ST',37,21],['ST',63,21]],
+    '3-4-3':[...GK,...B3,['LM',13,50],['CM',37,54],['CM',63,54],['RM',87,50],['LW',17,24],['ST',50,18],['RW',83,24]],
+    '5-3-2':[...GK,...B5,['CM',27,48],['CM',50,53],['CM',73,48],['ST',37,21],['ST',63,21]],
+    '4-5-1':[...GK,...B4,['LM',12,42],['CM',32,48],['CM',50,55],['CM',68,48],['RM',88,42],['ST',50,18]],
+    '4-4-1-1':[...GK,...B4,['LM',14,48],['CM',37,53],['CM',63,53],['RM',86,48],['SS',50,32],['ST',50,17]],
+    '4-3-1-2':[...GK,...B4,['CM',28,52],['DM',50,58],['CM',72,52],['AM',50,38],['ST',37,20],['ST',63,20]],
+    '4-3-2-1':[...GK,...B4,['CM',28,52],['CM',50,56],['CM',72,52],['AM',35,33],['AM',65,33],['ST',50,17]],
+    '3-4-1-2':[...GK,...B3,...M4,['AM',50,38],['ST',37,20],['ST',63,20]],
+    '3-4-2-1':[...GK,...B3,...M4,['AM',34,33],['AM',66,33],['ST',50,17]],
+    '5-4-1':[...GK,...B5,['LM',14,46],['CM',37,51],['CM',63,51],['RM',86,46],['ST',50,19]]
+  },
+  9:{
+    '3-3-2':[...GK,['LB',22,72],['CB',50,75],['RB',78,72],['LM',18,48],['CM',50,51],['RM',82,48],['ST',36,22],['ST',64,22]],
+    '3-2-3':[...GK,['LB',22,72],['CB',50,75],['RB',78,72],['CM',35,53],['CM',65,53],['LW',17,26],['ST',50,19],['RW',83,26]],
+    '2-4-2':[...GK,['CB',33,74],['CB',67,74],['LM',12,49],['CM',37,53],['CM',63,53],['RM',88,49],['ST',36,22],['ST',64,22]],
+    '3-1-3-1':[...GK,['LB',22,73],['CB',50,76],['RB',78,73],['DM',50,58],['LM',18,40],['AM',50,40],['RM',82,40],['ST',50,18]],
+    '3-4-1':[...GK,['LB',22,72],['CB',50,75],['RB',78,72],['LM',14,48],['CM',37,52],['CM',63,52],['RM',86,48],['ST',50,20]],
+    '4-3-1':[...GK,['LB',15,70],['CB',38,74],['CB',62,74],['RB',85,70],['LM',20,46],['CM',50,50],['RM',80,46],['ST',50,20]],
+    '3-2-2-1':[...GK,['LB',22,72],['CB',50,75],['RB',78,72],['CM',35,55],['CM',65,55],['LW',25,35],['RW',75,35],['ST',50,18]]
+  },
+  7:{
+    '2-3-1':[...GK,['CB',32,72],['CB',68,72],['LM',16,47],['CM',50,50],['RM',84,47],['ST',50,20]],
+    '3-2-1':[...GK,['LB',20,72],['CB',50,75],['RB',80,72],['CM',34,48],['CM',66,48],['ST',50,20]],
+    '2-1-2-1':[...GK,['CB',32,73],['CB',68,73],['DM',50,56],['LW',24,38],['RW',76,38],['ST',50,18]],
+    '3-1-2':[...GK,['LB',20,72],['CB',50,75],['RB',80,72],['CM',50,52],['ST',35,24],['ST',65,24]],
+    '2-2-2':[...GK,['CB',32,73],['CB',68,73],['CM',35,50],['CM',65,50],['ST',35,22],['ST',65,22]]
+  }
+};
+const PITCH_G=`<g fill="none" stroke="rgba(255,255,255,.6)" stroke-width=".35">
+<rect x="1.5" y="1.5" width="65" height="97"/><line x1="1.5" y1="50" x2="66.5" y2="50"/>
+<circle cx="34" cy="50" r="9.15"/><rect x="13.84" y="1.5" width="40.32" height="16.5"/><rect x="24.84" y="1.5" width="18.32" height="5.5"/>
+<rect x="13.84" y="82" width="40.32" height="16.5"/><rect x="24.84" y="93" width="18.32" height="5.5"/></g>
+<g fill="rgba(255,255,255,.7)"><circle cx="34" cy="50" r=".6"/><circle cx="34" cy="12.5" r=".5"/><circle cx="34" cy="87.5" r=".5"/></g>`;
+const PITCH_SVG=`<svg viewBox="0 0 68 100" preserveAspectRatio="none" aria-hidden="true">${PITCH_G}</svg>`;
+const NS='http://www.w3.org/2000/svg';
+const COLORS=[['#FFFFFF','White'],['#F2C230','Yellow'],['#E3574F','Red'],['#5AB0FF','Blue'],['#14213D','Navy']];
+const TOOLHINT={move:'Drag players, opponents and the ball.',pen:'Draw freehand.',run:'Drag to draw a run (solid arrow).',pass:'Drag to draw a pass (dashed arrow).',erase:'Tap a line or a counter to remove it.'};
+const CHECK='<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const XICON='<svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
+const TEMPLATES=['Who is marking their #9?','Who takes corners and free kicks?','Are we pressing together when they have the ball?','Does the back line step up after we clear?'];
+
+// ───────── helpers ─────────
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,10);
+const KEY='match-manager-v2';
+const DOC='team/state';
+let S, DB=null, DL=null, saveT=null;
+const ui={tab:'squad', partId:null, sel:null, editId:null, lastCi:null, shape:null, tool:'move', color:'#FFFFFF', boardSrc:null, bdrag:null};
+
+function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function freshMatch(){return {phase:'pre',running:false,runStart:0,accum:0,events:[],acked:[]}}
+function newPeriods(h){
+  return [0,Math.round(h/2),h,h+Math.round(h/2)].map((st,i)=>({id:uid(),label:'Part '+(i+1),start:st,formation:'4-4-2',slots:Array(11).fill(null),note:''}));
+}
+function defaultState(){
+  const sid=uid();
+  return {v:2,updatedAt:0,roster:[],
+    day:{opp:'',date:today(),halfMins:35,size:11,avail:[]},
+    strategies:[{id:sid,name:'Plan A',periods:newPeriods(35),jobs:[],notes:''}],
+    activeId:sid, match:freshMatch(), custom:{}, board:null, boards:[]};
+}
+function P(id){return S.roster.find(p=>p.id===id)}
+function nm(id){return P(id)?.name||'?'}
+function isAvail(id){return S.day.avail.includes(id)}
+function strat(){return S.strategies.find(s=>s.id===S.activeId)||S.strategies[0]}
+function fullTime(){return S.day.halfMins*2}
+function parts(){
+  const ps=strat().periods; ps.sort((a,b)=>a.start-b.start);
+  ps.forEach((p,i)=>{ if(/^Part \d+$/.test(p.label)) p.label='Part '+(i+1); fixPeriod(p); });
+  return ps;
+}
+function partEnd(i){const ps=strat().periods;return Math.max(ps[i].start, i+1<ps.length?ps[i+1].start:fullTime())}
+function fset(){return Object.assign({},FORMATIONS[S.day.size]||FORMATIONS[11],(S.custom||{})[S.day.size]||{})}
+function isCustom(f){return !!((S.custom||{})[S.day.size]||{})[f]}
+function fixPeriod(p){
+  const f=fset(); if(!f[p.formation]) p.formation=Object.keys(f)[0];
+  const n=f[p.formation].length; p.slots=(p.slots||[]).slice(0,n); while(p.slots.length<n) p.slots.push(null);
+}
+function slotsOf(p){return fset()[p.formation]}
+function initials(n){const w=String(n||'').trim().split(/\s+/);return w.length>1?(w[0][0]+w[w.length-1][0]).toUpperCase():w[0].slice(0,3).toUpperCase()}
+function discTxt(id){const p=P(id);return p?(p.num||initials(p.name)):''}
+function mmss(s){s=Math.max(0,Math.floor(s));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+function partRange(i){return `${strat().periods[i].start}–${partEnd(i)}'`}
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2600)}
+
+// ───────── persistence ─────────
+function save(){
+  S.updatedAt=Date.now();
+  try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+  clearTimeout(saveT); saveT=setTimeout(pushDb,700);
+}
+async function pushDb(retry){
+  if(!DB) return;
+  try{ await DB.doc(DOC).set(JSON.parse(JSON.stringify(S))); }
+  catch(e){ if(e&&e.code==='unavailable'&&!retry) setTimeout(()=>pushDb(true),1200+Math.random()*1200); }
+}
+function loadLocal(){try{const r=localStorage.getItem(KEY);if(r){const d=JSON.parse(r);if(d&&d.v===2)return d}}catch(e){}return null}
+function normalise(d){
+  const base=defaultState();
+  d.day=Object.assign(base.day,d.day||{}); d.match=Object.assign(freshMatch(),d.match||{});
+  d.roster=d.roster||[]; d.custom=d.custom||{}; d.boards=d.boards||[]; d.board=d.board||null; if(!d.strategies||!d.strategies.length){d.strategies=base.strategies;d.activeId=base.activeId}
+  d.strategies.forEach(s=>{s.jobs=s.jobs||[];s.notes=s.notes||'';s.periods=s.periods&&s.periods.length?s.periods:newPeriods(d.day.halfMins)});
+  return d;
+}
+
+// ───────── sheet (dialog) ─────────
+function sheet(title,html,cb){$('#sheetT').textContent=title;$('#sheetB').innerHTML=html;ui.sheetCb=cb;const d=$('#sheet');if(!d.open)d.showModal();}
+function closeSheet(){const d=$('#sheet');if(d.open)d.close();ui.sheetCb=null}
+function pick(title,options,cb){
+  sheet(title,`<div class="opts">${options.map(o=>`<button class="chip" data-act="sheetpick" data-v="${esc(o.v)}">${esc(o.t)}</button>`).join('')}</div>
+  <div class="row"><button class="btn" data-act="sheetclose">Cancel</button></div>`,cb);
+}
+function ask(title,value,cb,okLabel){
+  sheet(title,`<input class="in" id="sheetIn" value="${esc(value)}" maxlength="40"><div class="row" style="margin-top:14px"><button class="btn primary" data-act="sheetok">${esc(okLabel||'Save')}</button><button class="btn" data-act="sheetclose">Cancel</button></div>`,cb);
+  setTimeout(()=>{const i=$('#sheetIn');if(i){i.focus();i.select()}},30);
+}
+function confirmBox(text,okLabel,cb){
+  sheet(text,`<div class="row"><button class="btn stop" data-act="sheetok">${esc(okLabel)}</button><button class="btn" data-act="sheetclose">Cancel</button></div>`,cb);
+}
+
+// ───────── render: header ─────────
+function renderTop(){
+  const titles={squad:'Match day',plan:'Plan',notes:'Jobs and notes',board:'Whiteboard',match:'Match'};
+  $('#title').textContent=titles[ui.tab];
+  const {us,them}=score();
+  const vs=S.day.opp?`vs ${esc(S.day.opp)}`:'Opponent not set';
+  $('#sub').innerHTML = S.match.phase!=='pre' ? `${vs} <b>${us}–${them}</b>` : `${vs}, ${esc(strat().name)}`;
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===ui.tab));
+  document.querySelectorAll('main section').forEach(s=>s.classList.toggle('on',s.id===ui.tab));
+}
+function render(){renderTop();({squad:renderSquad,plan:renderPlan,notes:renderNotes,board:renderBoard,match:renderMatch})[ui.tab]();}
+
+// ───────── render: squad ─────────
+function renderSquad(){
+  const n=S.day.avail.filter(id=>P(id)).length, need=S.day.size;
+  const rows=S.roster.map(p=>{
+    if(ui.editId===p.id) return `<div class="srow edit">
+      <input class="in num-in" data-k="enum" value="${esc(p.num)}" inputmode="numeric" maxlength="3" placeholder="No." aria-label="Shirt number">
+      <input class="in" data-k="ename" value="${esc(p.name)}" maxlength="20" aria-label="Name">
+      <button class="btn small primary" data-act="savep" data-id="${p.id}">Save</button>
+      <button class="btn small warn" data-act="delp" data-id="${p.id}">Remove</button></div>`;
+    const a=isAvail(p.id);
+    return `<div class="srow ${a?'in':'out'}">
+      <button class="avail" data-act="avail" data-id="${p.id}" aria-pressed="${a}"><span class="tick">${a?CHECK:''}</span><span class="num">${esc(p.num)}</span><span class="pname">${esc(p.name)}</span></button>
+      <button class="icon" data-act="editp" data-id="${p.id}" aria-label="Edit ${esc(p.name)}">Edit</button></div>`;
+  }).join('');
+  $('#squad').innerHTML=`
+  <div class="card">
+    <h2>Today's game</h2>
+    <div class="grid2" style="margin-top:10px">
+      <div class="field"><label for="f-opp">Opponent</label><input class="in" id="f-opp" data-field="opp" value="${esc(S.day.opp)}" maxlength="30" placeholder="e.g. Didsbury Girls"></div>
+      <div class="field"><label for="f-date">Date</label><input class="in" id="f-date" type="date" data-field="date" value="${esc(S.day.date)}"></div>
+      <div class="field"><label for="f-half">Minutes per half</label><input class="in" id="f-half" type="number" inputmode="numeric" min="5" max="60" data-field="half" value="${S.day.halfMins}"></div>
+      <div class="field"><label for="f-size">Players a side</label><select class="in" id="f-size" data-field="size">${[11,9,7].map(k=>`<option value="${k}"${k===S.day.size?' selected':''}>${k}-a-side</option>`).join('')}</select></div>
+    </div>
+    <div class="field" style="margin-top:12px"><label for="f-plan">Plan for today</label><select class="in" id="f-plan" data-field="active">${S.strategies.map(s=>`<option value="${s.id}"${s.id===S.activeId?' selected':''}>${esc(s.name)}</option>`).join('')}</select></div>
+  </div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between"><h2>Who's available</h2><span class="count">${n} of ${S.roster.length}</span></div>
+    <p class="lead">${S.roster.length?`Tap a name to mark them in or out for today. ${n<need?`You need ${need} for a full team.`:''}`:'Add your squad below. Everyone you add is marked available.'}</p>
+    ${S.roster.length?`<div class="row" style="margin-bottom:6px"><button class="btn small" data-act="allin">Everyone in</button><button class="btn small" data-act="allout">Everyone out</button></div>`:''}
+    <div>${rows}</div>
+    <h3>Add a player</h3>
+    <div class="row"><input class="in" id="addNum" inputmode="numeric" maxlength="3" placeholder="No." style="flex:0 0 80px" aria-label="Shirt number (optional)">
+    <input class="in" id="addName" maxlength="20" placeholder="Name" style="flex:1;min-width:140px" aria-label="Player name">
+    <button class="btn primary" data-act="addp">Add</button></div>
+  </div>
+  <div class="row" style="margin:16px 0"><button class="btn primary big" data-act="nav" data-tab="plan">Set up the plan</button></div>
+  <div class="card">
+    <h2>Backup and move to another device</h2>
+    <p class="lead">Export saves your squad, every plan, jobs and notes as one file. Import that file on another device or browser to carry on where you left off.</p>
+    <div class="row"><button class="btn dl-only" data-act="exportall">Export everything</button><button class="btn" data-act="importpick">Import from file</button></div>
+    <input type="file" id="importFile" accept=".json,application/json" hidden>
+  </div>
+  ${ghCardHTML()}`;
+}
+
+// ───────── plan logic ─────────
+function changes(a,b){
+  const out=[]; if(!a) return out;
+  const sa=slotsOf(a), sb=slotsOf(b);
+  const inA=new Set(a.slots.filter(Boolean)), inB=new Set(b.slots.filter(Boolean));
+  if(a.formation!==b.formation) out.push({k:'shape',text:`Change shape to ${b.formation}`});
+  const offs=[...inA].filter(x=>!inB.has(x)), used=new Set();
+  b.slots.forEach((id,i)=>{
+    if(!id||inA.has(id)) return;
+    let off=a.slots[i];
+    if(!(off&&offs.includes(off)&&!used.has(off))) off=offs.find(o=>!used.has(o));
+    if(off){used.add(off);out.push({k:'sub',on:id,off,text:`${nm(id)} on for ${nm(off)} (${sb[i][0]})`})}
+    else out.push({k:'sub',on:id,text:`${nm(id)} on (${sb[i][0]})`});
+  });
+  offs.filter(o=>!used.has(o)).forEach(o=>out.push({k:'sub',off:o,text:`${nm(o)} off, no replacement`}));
+  b.slots.forEach((id,i)=>{
+    if(!id||!inA.has(id)) return;
+    const j=a.slots.indexOf(id), pa=sa[j]&&sa[j][0], pb=sb[i][0];
+    if(pa&&pa!==pb) out.push({k:'move',text:`${nm(id)} moves from ${pa} to ${pb}`});
+  });
+  return out;
+}
+function changeList(ch){
+  if(!ch.length) return '<p class="none">No changes from the previous part.</p>';
+  const lab={sub:'Sub',move:'Move',shape:'Shape'};
+  return `<ul class="changes">${ch.map(c=>`<li><span class="k">${lab[c.k]}</span>${esc(c.text)}</li>`).join('')}</ul>`;
+}
+function minutes(){
+  const m={}; const ps=parts();
+  ps.forEach((p,i)=>{const d=partEnd(i)-p.start;p.slots.forEach(id=>{if(id)m[id]=(m[id]||0)+d})});
+  return m;
+}
+function pitchHTML(per,interactive,compact){
+  const sl=slotsOf(per);
+  let h=`<div class="pitch${compact?' compact':''}">${PITCH_SVG}`;
+  sl.forEach(([pos,x,y],i)=>{
+    const id=per.slots[i], p=P(id);
+    const sel=interactive&&ui.sel&&ui.sel.type==='slot'&&ui.sel.idx===i;
+    const bad=p&&!isAvail(id);
+    const tag=interactive?'button':'div';
+    h+=`<${tag} class="slot${p?'':' empty'}${sel?' sel':''}${bad?' bad':''}" style="left:${x}%;top:${y}%"${interactive?` data-act="slot" data-i="${i}" aria-label="${esc(pos)}: ${p?esc(p.name):'empty'}"`:''}><span class="disc">${p?esc(discTxt(id)):esc(pos)}</span>${p?`<span class="nm">${esc(p.name)}</span>`:''}</${tag}>`;
+  });
+  return h+'</div>';
+}
+function curPer(){const ps=parts();let p=ps.find(x=>x.id===ui.partId);if(!p){p=ps[0];ui.partId=p.id}return p}
+
+function formOptions(cur){
+  const pre=Object.keys(FORMATIONS[S.day.size]||{}), mine=Object.keys((S.custom||{})[S.day.size]||{});
+  const o=f=>`<option value="${esc(f)}"${f===cur?' selected':''}>${esc(f)}</option>`;
+  return `<optgroup label="Standard">${pre.map(o).join('')}</optgroup>`+(mine.length?`<optgroup label="Your formations">${mine.map(o).join('')}</optgroup>`:'');
+}
+function shapePitchHTML(per){
+  let h=`<div class="pitch">${PITCH_SVG}`;
+  ui.shape.layout.forEach(([pos,x,y],i)=>{
+    const id=per.slots[i];
+    h+=`<div class="slot shape" data-shape="${i}" style="left:${x}%;top:${y}%" role="button" aria-label="Position ${esc(pos)}"><span class="disc">${esc(pos)}</span>${id?`<span class="nm">${esc(nm(id))}</span>`:''}</div>`;
+  });
+  return h+'</div>';
+}
+
+// ───────── GitHub sync (standalone site only) ─────────
+const GHKEY='match-manager-github';
+function ghCfg(){try{return Object.assign({repo:'',path:'data/match-manager.json',branch:'main',token:'',sha:'',last:''},JSON.parse(localStorage.getItem(GHKEY)||'{}'))}catch(e){return {repo:'',path:'data/match-manager.json',branch:'main',token:'',sha:'',last:''}}}
+function ghPut(c){try{localStorage.setItem(GHKEY,JSON.stringify(c))}catch(e){}}
+function ghCardHTML(){
+  if(window.claude&&window.claude.use)return '';
+  const c=ghCfg();
+  return `<div class="card">
+    <h2>Sync with GitHub</h2>
+    <p class="lead">Save everything to a file in a GitHub repository and load it on any device. The token stays on this device and is never included in exports.</p>
+    <div class="grid2">
+      <div class="field"><label for="ghRepo">Repository (owner/name)</label><input class="in" id="ghRepo" value="${esc(c.repo)}" placeholder="eduardo-fe/footballmanager-data" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
+      <div class="field"><label for="ghBranch">Branch</label><input class="in" id="ghBranch" value="${esc(c.branch)}" autocapitalize="off" spellcheck="false"></div>
+    </div>
+    <div class="field" style="margin-top:12px"><label for="ghPath">File in the repository</label><input class="in" id="ghPath" value="${esc(c.path)}" autocapitalize="off" spellcheck="false"></div>
+    <div class="field" style="margin-top:12px"><label for="ghToken">Access token (needed to save, and to load from a private repository)</label><input class="in" id="ghToken" type="password" value="${esc(c.token)}" autocomplete="off" placeholder="github_pat_..."></div>
+    <div class="row" style="margin-top:12px"><button class="btn primary" data-act="ghsave">Save to GitHub</button><button class="btn" data-act="ghload">Load from GitHub</button></div>
+    <p class="lead" id="ghStatus" style="margin:10px 0 0">${c.last?esc(c.last):'Not synced yet on this device.'}</p>
+  </div>`;
+}
+function ghStatus(msg){const c=ghCfg();c.last=msg;ghPut(c);const el=$('#ghStatus');if(el)el.textContent=msg}
+function b64encode(str){const b=new TextEncoder().encode(str);let s='';for(let i=0;i<b.length;i+=0x8000)s+=String.fromCharCode.apply(null,b.subarray(i,i+0x8000));return btoa(s)}
+function b64decode(b64){const bin=atob(String(b64).replace(/\s/g,''));const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new TextDecoder().decode(u)}
+function ghUrl(c){return `https://api.github.com/repos/${c.repo.trim().replace(/^https?:\/\/github\.com\//,'').replace(/\/+$/,'')}/contents/${c.path.trim().replace(/^\/+/,'').split('/').map(encodeURIComponent).join('/')}`}
+function ghHeaders(c){const h={'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'};if(c.token.trim())h.Authorization='Bearer '+c.token.trim();return h}
+function ghErr(status){
+  if(status===401)return 'GitHub rejected the token. Check it hasn\'t expired.';
+  if(status===403)return 'The token doesn\'t have permission for this repository, or GitHub is rate-limiting. Check the token has Contents: read and write.';
+  if(status===404)return 'Repository or file not found. Check the name, branch and file path. A private repository needs a token.';
+  if(status===409||status===422)return 'GitHub refused the save because the file changed. Load it first, then save again.';
+  return 'GitHub returned an error ('+status+').';
+}
+async function ghFetchRemote(c){
+  const r=await fetch(ghUrl(c)+'?ref='+encodeURIComponent(c.branch.trim()||'main')+'&t='+Date.now(),{headers:ghHeaders(c),cache:'no-store'});
+  if(r.status===404)return null;
+  if(!r.ok)throw {status:r.status};
+  return r.json();
+}
+async function ghLoad(){
+  const c=ghCfg(); if(!c.repo.trim()){toast('Enter the repository first.');return}
+  ghStatus('Loading from GitHub…');
+  try{
+    const f=await ghFetchRemote(c);
+    if(!f){ghStatus(ghErr(404));return}
+    let d; try{d=JSON.parse(b64decode(f.content))}catch(e){ghStatus('That file isn\'t a Match Manager backup.');return}
+    if(!d||d.v!==2||!Array.isArray(d.roster)||!Array.isArray(d.strategies)){ghStatus('That file isn\'t a Match Manager backup.');return}
+    confirmBox(`Replace everything here with the GitHub copy (${d.roster.length} players, ${d.strategies.length} plan${d.strategies.length===1?'':'s'})?`,'Load',()=>{
+      S=normalise(d); ui.partId=null; ui.sel=null; ui.editId=null; ui.lastCi=null;
+      const c2=ghCfg(); c2.sha=f.sha; ghPut(c2); save(); render();
+      ghStatus('Loaded from GitHub at '+new Date().toLocaleString()+'.'); toast('Loaded from GitHub');
+    });
+    ghStatus('Found the file on GitHub. Confirm to load it.');
+  }catch(e){ghStatus(e&&e.status?ghErr(e.status):'Couldn\'t reach GitHub. Check your connection.')}
+}
+async function ghSave(force){
+  const c=ghCfg(); if(!c.repo.trim()){toast('Enter the repository first.');return}
+  if(!c.token.trim()){toast('Saving needs an access token.');$('#ghToken')&&$('#ghToken').focus();return}
+  ghStatus('Saving to GitHub…');
+  try{
+    const f=await ghFetchRemote(c), remoteSha=f?f.sha:null;
+    if(remoteSha&&remoteSha!==c.sha&&!force){
+      confirmBox('The GitHub copy has changed since this device last loaded or saved it. Save anyway and overwrite it?','Overwrite',()=>ghSave(true));
+      ghStatus('The GitHub copy has changed. Load it first, or confirm to overwrite.');
+      return;
+    }
+    const body={message:`Update match manager data (${new Date().toISOString().slice(0,16).replace('T',' ')})`,content:b64encode(JSON.stringify(S,null,2)),branch:c.branch.trim()||'main'};
+    if(remoteSha)body.sha=remoteSha;
+    const r=await fetch(ghUrl(c),{method:'PUT',headers:Object.assign({'Content-Type':'application/json'},ghHeaders(c)),body:JSON.stringify(body)});
+    if(!r.ok){ghStatus(ghErr(r.status));return}
+    const j=await r.json(); const c2=ghCfg(); c2.sha=j.content&&j.content.sha||''; ghPut(c2);
+    ghStatus('Saved to GitHub at '+new Date().toLocaleString()+'.'); toast('Saved to GitHub');
+  }catch(e){ghStatus(e&&e.status?ghErr(e.status):'Couldn\'t reach GitHub. Check your connection.')}
+}
+document.addEventListener('input',e=>{
+  const map={ghRepo:'repo',ghBranch:'branch',ghPath:'path',ghToken:'token'}, k=map[e.target.id]; if(!k)return;
+  const c=ghCfg(); if(k!=='token'&&c[k]!==e.target.value)c.sha=''; c[k]=e.target.value; ghPut(c);
+});
+
+// ───────── render: plan ─────────
+function renderPlan(){
+  const s=strat(), ps=parts(), per=curPer(), i=ps.indexOf(per), sl=slotsOf(per);
+  const onP=new Set(per.slots.filter(Boolean));
+  const bench=S.roster.filter(p=>isAvail(p.id)&&!onP.has(p.id));
+  const empty=per.slots.filter(x=>!x).length;
+  const out=per.slots.map((id,k)=>id&&!isAvail(id)?`${nm(id)} (${sl[k][0]})`:null).filter(Boolean);
+  let hint='Tap a position, then a player from the bench. Tap two positions to swap them.', hcls='hint', extra='';
+  if(ui.sel&&ui.sel.type==='slot'){
+    const id=per.slots[ui.sel.idx], pos=sl[ui.sel.idx][0]; hcls+=' sel';
+    if(id){hint=`${nm(id)} (${pos}) selected. Tap a bench player to bring them on, or another position to swap.`;extra=`<button class="btn small" data-act="tobench" style="margin-top:8px;border-color:var(--bib-ink)">Move ${esc(nm(id))} to the bench</button>`}
+    else hint=`Pick a player for ${pos}.`;
+  } else if(ui.sel&&ui.sel.type==='player'){hcls+=' sel';hint=`Now tap a position for ${nm(ui.sel.id)}.`}
+  const mins=minutes(), ft=fullTime();
+  const mplayers=S.roster.filter(p=>isAvail(p.id)||mins[p.id]).sort((a,b)=>(mins[b.id]||0)-(mins[a.id]||0));
+  $('#plan').innerHTML=`
+  <div class="card">
+    <div class="field"><label for="f-strat">Plan</label><select class="in" id="f-strat" data-field="active">${S.strategies.map(x=>`<option value="${x.id}"${x.id===S.activeId?' selected':''}>${esc(x.name)}</option>`).join('')}</select></div>
+    <div class="row" style="margin-top:10px"><button class="btn small" data-act="newstrat">New plan</button><button class="btn small" data-act="dupstrat">Duplicate</button><button class="btn small" data-act="renstrat">Rename</button>${S.strategies.length>1?'<button class="btn small warn" data-act="delstrat">Delete</button>':''}</div>
+  </div>
+  <div class="parts" role="tablist" aria-label="Parts of the match">
+    ${ps.map((p,k)=>`<button class="part${p.id===per.id?' on':''}" role="tab" aria-selected="${p.id===per.id}" data-act="part" data-id="${p.id}"><b>${esc(p.label)}</b><small>${partRange(k)} ${esc(p.formation)}</small></button>`).join('')}
+    ${ps.length<10?'<button class="part add" data-act="addpart">Add part</button>':''}
+  </div>
+  <div class="grid2 tight">
+    <div class="field"><label for="f-pf">Formation</label><select class="in" id="f-pf" data-field="pform"${ui.shape?' disabled':''}>${formOptions(per.formation)}</select></div>
+    <div class="field"><label for="f-ps">Starts at minute</label><input class="in" id="f-ps" type="number" inputmode="numeric" min="0" max="${ft-1}" data-field="pstart" value="${per.start}"${i===0?' disabled':''}></div>
+  </div>
+  ${ui.shape?`<div class="hint sel">Drag the positions where you want them. Tap one to rename it.</div>`:`<div class="${hcls}">${esc(hint)}${extra?'<br>'+extra:''}</div>`}
+  ${empty?`<p class="warn-line">${empty} of ${sl.length} positions still empty.</p>`:''}
+  ${out.length?`<p class="warn-line">Not available today: ${esc(out.join(', '))}</p>`:''}
+  <div class="pitch-wrap">${ui.shape?shapePitchHTML(per):pitchHTML(per,true,false)}<p class="attack">Attacking towards the top</p></div>
+  ${ui.shape?`<div class="row" style="margin-top:10px"><button class="btn primary" data-act="shapesaveas">Save as new formation</button>${isCustom(per.formation)?`<button class="btn" data-act="shapeupdate">Update ${esc(per.formation)}</button><button class="btn warn" data-act="shapedel">Delete ${esc(per.formation)}</button>`:''}<button class="btn" data-act="shapecancel">Cancel</button></div>`
+  :`<div class="row" style="margin-top:10px"><button class="btn small" data-act="shapeedit">Adjust positions</button><button class="btn small" data-act="toboard">Open on whiteboard</button></div>`}
+  <div class="card">
+    <h2>Bench</h2>
+    ${bench.length?`<div class="bench">${bench.map(p=>`<button class="chip${ui.sel&&ui.sel.type==='player'&&ui.sel.id===p.id?' sel':''}" data-act="bench" data-id="${p.id}">${p.num?`<span class="n">${esc(p.num)}</span>`:''}${esc(p.name)}</button>`).join('')}</div>`:`<p class="none">${S.roster.length?'Everyone available is on the pitch.':'Add players on the Squad tab first.'}</p>`}
+  </div>
+  <div class="card">
+    <h2>${i===0?'Starting line-up':`Changes at ${per.start}'`}</h2>
+    ${i===0?'<p class="none">This is who starts.</p>':changeList(changes(ps[i-1],per))}
+    <h3>Instructions for this part</h3>
+    <textarea class="in" data-field="pnote" placeholder="e.g. Drop Eva deeper when we lose the ball">${esc(per.note)}</textarea>
+    <h3>Part settings</h3>
+    <div class="field"><label for="f-pl">Name</label><input class="in" id="f-pl" data-field="plabel" value="${esc(per.label)}" maxlength="24"></div>
+    <div class="row" style="margin-top:10px">${i>0?'<button class="btn small" data-act="copyprev">Copy previous part</button>':''}<button class="btn small" data-act="clearpart">Clear pitch</button>${ps.length>1?'<button class="btn small warn" data-act="delpart">Delete part</button>':''}</div>
+  </div>
+  <div class="card">
+    <h2>Planned minutes</h2>
+    <p class="lead">Across all parts of this plan, out of ${ft}.</p>
+    ${mplayers.length?mplayers.map(p=>{const m=mins[p.id]||0;return `<div class="mrow${m?'':' zero'}"><span>${esc(p.name)}</span><span class="bar"><i style="width:${Math.min(100,m/ft*100)}%"></i></span><span class="m">${m}'</span></div>`}).join(''):'<p class="none">No players yet.</p>'}
+  </div>
+  <div class="row dl-only" style="margin:12px 0"><button class="btn" data-act="dlmd">Download plan</button></div>`;
+}
+
+// ───────── render: notes ─────────
+function partName(pid){if(pid==='all')return 'Whole match';const p=strat().periods.find(x=>x.id===pid);return p?p.label:'Whole match'}
+function jobHTML(j,withDelete){
+  return `<div class="job${j.done?' done':''}">
+    <button class="tick-btn" data-act="jobdone" data-id="${j.id}" aria-pressed="${!!j.done}" aria-label="Mark done"><span class="tick">${j.done?CHECK:''}</span></button>
+    <div class="jt"><div>${esc(j.text)}</div><div class="meta">${j.pid&&P(j.pid)?`<span class="tag">${esc(nm(j.pid))}</span>`:''}<span class="tag plain">${esc(partName(j.part))}</span></div></div>
+    ${withDelete?`<button class="icon" data-act="jobdel" data-id="${j.id}" aria-label="Delete">${XICON}</button>`:''}</div>`;
+}
+function renderNotes(){
+  const s=strat(), ps=parts();
+  $('#notes').innerHTML=`
+  <div class="card">
+    <h2>Jobs and checks</h2>
+    <p class="lead">Give someone a job, or write a question to check during the game. Tick them off in the Match tab.</p>
+    <div class="field"><label for="jobText">What</label><input class="in" id="jobText" maxlength="120" placeholder="Who is tracking Lyla?"></div>
+    <div class="grid2" style="margin-top:10px">
+      <div class="field"><label for="jobWho">Who (optional)</label><select class="in" id="jobWho"><option value="">No one in particular</option>${S.roster.map(p=>`<option value="${p.id}">${esc(p.name)}${isAvail(p.id)?'':' (out today)'}</option>`).join('')}</select></div>
+      <div class="field"><label for="jobPart">When</label><select class="in" id="jobPart"><option value="all">Whole match</option>${ps.map(p=>`<option value="${p.id}">${esc(p.label)} (from ${p.start}')</option>`).join('')}</select></div>
+    </div>
+    <div class="row" style="margin-top:12px"><button class="btn primary" data-act="addjob">Add</button></div>
+    <h3>Ideas</h3>
+    <div class="bench">${TEMPLATES.map(t=>`<button class="chip ghost" data-act="tpl" data-v="${esc(t)}">${esc(t)}</button>`).join('')}</div>
+  </div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between"><h2>This plan's list</h2>${s.jobs.some(j=>j.done)?'<button class="btn small" data-act="jobsreset">Untick all</button>':''}</div>
+    ${s.jobs.length?s.jobs.map(j=>jobHTML(j,true)).join(''):'<p class="none">Nothing yet. Add your first job above.</p>'}
+  </div>
+  <div class="card">
+    <h2>Game notes</h2>
+    <p class="lead">Anything else for this plan: their dangerous players, set pieces, what to say at half-time.</p>
+    <textarea class="in" data-field="snotes" style="min-height:180px" placeholder="Their #7 is quick down the left. Keep Polly tight.">${esc(s.notes)}</textarea>
+  </div>`;
+}
+
+// ───────── render: whiteboard ─────────
+function lineSVG(l){
+  const pts=l.type==='pen'?l.pts:[l.pts[0],l.pts[l.pts.length-1]];
+  const d='M'+pts.map(p=>(+p[0]).toFixed(1)+' '+(+p[1]).toFixed(1)).join(' L');
+  const ci=Math.max(0,COLORS.findIndex(c=>c[0]===l.color));
+  return `<g class="ln" data-line="${l.id}"><path class="hit" d="${d}"/><path d="${d}" fill="none" stroke="${l.color}" stroke-width=".8" stroke-linecap="round" stroke-linejoin="round"${l.type==='pass'?' stroke-dasharray="2 1.6"':''}${l.type!=='pen'?` marker-end="url(#ah${ci})"`:''}/></g>`;
+}
+function tokSVG(t){
+  if(t.kind==='ball')return `<g class="tok" data-tok="${t.id}" transform="translate(${t.x} ${t.y})"><circle r="3.5" fill="transparent"/><circle r="1.7" fill="#fff" stroke="#14213D" stroke-width=".45"/></g>`;
+  const opp=t.kind==='opp', lab=String(t.label||'');
+  return `<g class="tok" data-tok="${t.id}" transform="translate(${t.x} ${t.y})"><circle r="4" fill="${opp?'#C8322D':'#F2C230'}" stroke="#fff" stroke-width=".6"/><text y="1.15" text-anchor="middle" font-size="${lab.length>2?2.7:3.3}" font-weight="800" fill="${opp?'#fff':'#14213D'}">${esc(lab)}</text>${t.name?`<text class="tn" y="7.3" text-anchor="middle" font-size="2.5" font-weight="700">${esc(t.name)}</text>`:''}</g>`;
+}
+function drawBoard(){
+  const svg=$('#bsvg'); if(!svg)return; const B=S.board;
+  const defs='<defs>'+COLORS.map(([c],i)=>`<marker id="ah${i}" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="${c}"/></marker>`).join('')+'</defs>';
+  svg.innerHTML=defs+PITCH_G+B.lines.map(lineSVG).join('')+B.tokens.map(tokSVG).join('');
+}
+function loadBoard(per){
+  const B=S.board; B.tokens=B.tokens.filter(t=>t.kind!=='us');
+  slotsOf(per).forEach((sl,i)=>{const id=per.slots[i];B.tokens.push({id:uid(),kind:'us',label:id?discTxt(id):sl[0],name:id?nm(id):'',x:+(sl[1]*.68).toFixed(1),y:sl[2]})});
+  B.from=`${per.label}, ${per.formation}`;
+}
+function renderBoard(){
+  if(!S.board)S.board={tokens:[],lines:[],from:''};
+  const ps=parts(); if(!ps.find(p=>p.id===ui.boardSrc))ui.boardSrc=curPer().id;
+  const tools=[['move','Move'],['pen','Draw'],['run','Run'],['pass','Pass'],['erase','Erase']];
+  const B=S.board;
+  $('#board').innerHTML=`
+  <div class="seg" role="toolbar" aria-label="Board tools">${tools.map(([k,l])=>`<button class="${ui.tool===k?'on':''}" data-act="btool" data-v="${k}" aria-pressed="${ui.tool===k}">${l}</button>`).join('')}</div>
+  <div class="row swatches">${COLORS.map(([c,n])=>`<button class="sw${ui.color===c?' on':''}" style="background:${c}" data-act="bcolor" data-v="${c}" aria-label="${n}" aria-pressed="${ui.color===c}"></button>`).join('')}<span class="toolhint">${TOOLHINT[ui.tool]}</span></div>
+  <div class="pitch-wrap"><div class="pitch board${ui.tool==='erase'?' erase':''}"><svg id="bsvg" viewBox="0 0 68 100" preserveAspectRatio="none" role="img" aria-label="Whiteboard"></svg></div><p class="attack">Attacking towards the top</p></div>
+  <div class="row" style="margin-top:10px">
+    <button class="btn small" data-act="bundo"${B.lines.length?'':' disabled'}>Undo line</button>
+    <button class="btn small" data-act="bclear"${B.lines.length?'':' disabled'}>Clear drawings</button>
+    <button class="btn small" data-act="bopp1">Add opponent</button>
+    <button class="btn small" data-act="boppteam">Add their team</button>
+    <button class="btn small" data-act="bball">${B.tokens.some(t=>t.kind==='ball')?'Ball to centre':'Add ball'}</button>
+    <button class="btn small warn" data-act="bwipe">Clear board</button>
+  </div>
+  <div class="card">
+    <div class="field"><label for="bSrc">Bring in a line-up</label>
+    <div class="row"><select class="in" id="bSrc" style="flex:1;min-width:160px">${ps.map(p=>`<option value="${p.id}"${p.id===ui.boardSrc?' selected':''}>${esc(p.label)}, ${esc(p.formation)}</option>`).join('')}</select><button class="btn primary" data-act="bload">Load</button></div></div>
+    <p class="lead" style="margin:8px 0 0">${B.from?`On the board: ${esc(B.from)}. `:''}Loading replaces your players only. Opponents and drawings stay until you clear them.</p>
+  </div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between"><h2>Saved boards</h2><button class="btn small primary" data-act="bsave">Save this board</button></div>
+    ${S.boards.length?S.boards.map(b=>`<div class="saved"><span class="x"><b>${esc(b.name)}</b><br><small>${new Date(b.savedAt).toLocaleDateString()}</small></span><button class="btn small" data-act="bopen" data-id="${b.id}">Open</button><button class="icon" data-act="bdel" data-id="${b.id}" aria-label="Delete ${esc(b.name)}">${XICON}</button></div>`).join(''):'<p class="none">Save a board to keep a set piece or a half-time talk for later.</p>'}
+  </div>`;
+  drawBoard();
+}
+function bpt(e){const r=$('#bsvg').getBoundingClientRect();return [Math.max(1,Math.min(67,(e.clientX-r.left)/r.width*68)),Math.max(1,Math.min(99,(e.clientY-r.top)/r.height*100))]}
+document.addEventListener('pointerdown',e=>{
+  const sh=e.target.closest&&e.target.closest('[data-shape]');
+  if(sh&&ui.shape){ui.bdrag={kind:'shape',i:+sh.dataset.shape,el:sh,moved:false,sx:e.clientX,sy:e.clientY};try{sh.setPointerCapture(e.pointerId)}catch(_){}e.preventDefault();return}
+  if(!(e.target.closest&&e.target.closest('#bsvg')))return;
+  const B=S.board, pt=bpt(e), tokEl=e.target.closest('[data-tok]');
+  if(ui.tool==='erase'){
+    const ln=e.target.closest('[data-line]');
+    if(ln){B.lines=B.lines.filter(l=>l.id!==ln.dataset.line);save();renderBoard()}
+    else if(tokEl){B.tokens=B.tokens.filter(t=>t.id!==tokEl.dataset.tok);save();renderBoard()}
+    return;
+  }
+  if(ui.tool==='move'){
+    if(!tokEl)return; const t=B.tokens.find(x=>x.id===tokEl.dataset.tok); if(!t)return;
+    tokEl.parentNode.appendChild(tokEl);
+    ui.bdrag={kind:'tok',t,el:tokEl,ox:t.x-pt[0],oy:t.y-pt[1]};
+  } else {
+    const l={id:uid(),type:ui.tool,color:ui.color,pts:ui.tool==='pen'?[pt]:[pt,pt]};
+    const g=document.createElementNS(NS,'g'); $('#bsvg').appendChild(g);
+    ui.bdrag={kind:'line',l,g};
+  }
+  e.preventDefault(); try{$('#bsvg').setPointerCapture(e.pointerId)}catch(_){}
+});
+window.addEventListener('pointermove',e=>{
+  const d=ui.bdrag; if(!d)return;
+  if(d.kind==='shape'){
+    if(!d.moved&&Math.hypot(e.clientX-d.sx,e.clientY-d.sy)<6)return; d.moved=true;
+    const r=d.el.closest('.pitch').getBoundingClientRect();
+    const x=Math.round(Math.max(4,Math.min(96,(e.clientX-r.left)/r.width*100))), y=Math.round(Math.max(4,Math.min(96,(e.clientY-r.top)/r.height*100)));
+    ui.shape.layout[d.i][1]=x; ui.shape.layout[d.i][2]=y; d.el.style.left=x+'%'; d.el.style.top=y+'%'; return;
+  }
+  const pt=bpt(e);
+  if(d.kind==='tok'){d.t.x=+Math.max(3,Math.min(65,pt[0]+d.ox)).toFixed(1);d.t.y=+Math.max(3,Math.min(97,pt[1]+d.oy)).toFixed(1);d.el.setAttribute('transform',`translate(${d.t.x} ${d.t.y})`)}
+  else if(d.kind==='line'){
+    const L=d.l;
+    if(L.type==='pen'){const q=L.pts[L.pts.length-1];if(Math.hypot(pt[0]-q[0],pt[1]-q[1])>.6)L.pts.push(pt)}
+    else L.pts[1]=pt;
+    d.g.innerHTML=lineSVG(L);
+  }
+});
+function endDrag(){
+  const d=ui.bdrag; if(!d)return; ui.bdrag=null;
+  if(d.kind==='shape'){
+    if(!d.moved){const i=d.i;ask('Position name',ui.shape.layout[i][0],v=>{if(v)ui.shape.layout[i][0]=v.toUpperCase().slice(0,4);render()})}
+    return;
+  }
+  if(d.kind==='tok'){save();return}
+  const L=d.l;
+  const ok=L.type==='pen'?L.pts.length>1:Math.hypot(L.pts[1][0]-L.pts[0][0],L.pts[1][1]-L.pts[0][1])>2;
+  if(ok){L.pts=L.pts.map(p=>[+p[0].toFixed(1),+p[1].toFixed(1)]);S.board.lines.push(L);save()}
+  renderBoard();
+}
+window.addEventListener('pointerup',endDrag);
+window.addEventListener('pointercancel',endDrag);
+
+// ───────── match clock ─────────
+function clockSec(){
+  const m=S.match, H=S.day.halfMins*60;
+  const el=m.accum+(m.running?(Date.now()-m.runStart)/1000:0);
+  if(m.phase==='pre')return 0; if(m.phase==='h1')return el; if(m.phase==='ht')return H; return H+el;
+}
+function clockTxt(){
+  const s=clockSec(), H=S.day.halfMins*60, ph=S.match.phase;
+  if(ph==='h1'&&s>H) return `${S.day.halfMins}+${mmss(s-H)}`;
+  if((ph==='h2'||ph==='ft')&&s>2*H) return `${S.day.halfMins*2}+${mmss(s-2*H)}`;
+  return mmss(s);
+}
+function score(){const e=S.match.events;return {us:e.filter(x=>x.type==='goal').length,them:e.filter(x=>x.type==='opp').length}}
+function matchInfo(){
+  const H=S.day.halfMins*60, ph=S.match.phase, sec=clockSec(), ps=parts();
+  let eff=sec; if(ph==='h1')eff=Math.min(sec,H-1); if(ph==='pre')eff=0;
+  let ci=0; ps.forEach((p,i)=>{if(p.start*60<=eff)ci=i});
+  const ni=ph==='ft'?-1:(ci+1<ps.length?ci+1:-1);
+  return {H,ph,sec,eff,ci,ni,ps};
+}
+function countdownTxt(){
+  const {H,ph,eff,ni,ps}=matchInfo(); if(ni<0)return '';
+  const t=ps[ni].start*60;
+  if(ph==='pre')return `at ${ps[ni].start}'`;
+  if(ph==='h1'&&t>=H)return t===H?'at half-time':`${mmss(t-H)} into the 2nd half`;
+  return 'in '+mmss(t-eff);
+}
+function addEvent(type,text){S.match.events.push({id:uid(),t:Math.floor(clockSec()),type,text});save()}
+
+// ───────── render: match ─────────
+function renderMatch(){
+  const m=S.match, {us,them}=score(), info=matchInfo(), {ci,ni,ps,ph}=info;
+  const per=ps[ci], chNow=ci>0?changes(ps[ci-1],per):[], pending=chNow.length&&!m.acked.includes(per.id)&&ph!=='pre';
+  const phaseLbl={pre:'Before kick-off',h1:'1st half',ht:'Half-time',h2:'2nd half',ft:'Full time'}[ph];
+  let btns='';
+  if(ph==='pre')btns=`<button class="btn go big" data-act="start1">Kick off</button>`;
+  else if(ph==='h1')btns=(m.running?`<button class="btn big" data-act="pause">Pause</button>`:`<button class="btn go big" data-act="resume">Resume</button>`)+`<button class="btn stop big" data-act="ht">Half-time</button>`;
+  else if(ph==='ht')btns=`<button class="btn go big" data-act="start2">Start 2nd half</button>`;
+  else if(ph==='h2')btns=(m.running?`<button class="btn big" data-act="pause">Pause</button>`:`<button class="btn go big" data-act="resume">Resume</button>`)+`<button class="btn stop big" data-act="ft">Full time</button>`;
+  else btns=`<button class="btn big" data-act="reset">New match</button>`;
+  const jobs=strat().jobs.filter(j=>j.part==='all'||j.part===per.id);
+  const evs=[...m.events].reverse();
+  $('#match').innerHTML=`
+  <div class="card clockbox">
+    <div class="phase">${phaseLbl}</div>
+    <div class="clock${m.running?'':' paused'}" id="clk">${clockTxt()}</div>
+    <div class="row">${btns}</div>
+  </div>
+  <div class="card">
+    <div class="score"><div><div class="who">Us</div><div class="n">${us}</div></div><div class="dash">–</div><div><div class="who">${esc(S.day.opp||'Them')}</div><div class="n">${them}</div></div></div>
+    <div class="pair"><button class="btn go" data-act="goal">We scored</button><button class="btn stop" data-act="oppgoal">They scored</button></div>
+  </div>
+  <div class="card${pending?' due':''}">
+    <h2 class="${pending?'due-title':''}">${pending?`Make these changes now`:`Now: ${esc(per.label)}`}</h2>
+    <p class="lead">${pending?esc(per.label)+', ':''}${partRange(ci)}, ${esc(per.formation)}</p>
+    ${pending?changeList(chNow)+`<div class="row" style="margin:10px 0"><button class="btn primary" data-act="ack" data-id="${per.id}">Done, log them</button></div>`:''}
+    ${per.note?`<p style="margin:8px 0 12px"><b>Instructions:</b> ${esc(per.note)}</p>`:''}
+    <div class="pitch-wrap">${pitchHTML(per,false,true)}</div>
+    <div class="row" style="margin-top:10px"><button class="btn small" data-act="toboard" data-id="${per.id}">Open on whiteboard</button></div>
+  </div>
+  ${ni>=0?`<div class="card"><div class="row" style="justify-content:space-between"><h2>Next: ${esc(ps[ni].label)}</h2><span class="cd" id="cd">${countdownTxt()}</span></div>${changeList(changes(per,ps[ni]))}</div>`:''}
+  <div class="card">
+    <h2>Jobs right now</h2>
+    ${jobs.length?jobs.map(j=>jobHTML(j,false)).join(''):'<p class="none">No jobs for this part. Add them on the Jobs tab.</p>'}
+  </div>
+  <div class="card">
+    <h2>Match log</h2>
+    <div class="row" style="margin:8px 0 6px"><input class="in" id="evNote" maxlength="140" placeholder="Quick note, e.g. Lyla getting in behind" style="flex:1;min-width:160px"><button class="btn primary" data-act="addnote">Log</button></div>
+    ${evs.length?evs.map(e=>`<div class="ev ${e.type}"><span class="t">${mmss(e.t)}</span><span class="x">${esc(e.text)}</span><button class="icon" data-act="evdel" data-id="${e.id}" aria-label="Delete entry">${XICON}</button></div>`).join(''):'<p class="none">Nothing logged yet.</p>'}
+  </div>
+  <div class="row" style="margin:12px 0"><button class="btn dl-only" data-act="dljson">Download match data</button>${ph!=='pre'&&ph!=='ft'?'<button class="btn warn" data-act="reset">Reset match</button>':''}</div>`;
+  ui.lastCi=ci;
+}
+
+// ───────── tick ─────────
+setInterval(()=>{
+  if(!S||S.match.phase==='pre'||S.match.phase==='ft')return;
+  const {ci,ps}=matchInfo();
+  if(ui.lastCi!==null&&ci!==ui.lastCi){
+    const per=ps[ci], ch=ci>0?changes(ps[ci-1],per):[];
+    if(ch.length&&!S.match.acked.includes(per.id)){try{navigator.vibrate&&navigator.vibrate([300,150,300])}catch(e){} toast(`${per.label}: time for changes`)}
+    ui.lastCi=ci; if(ui.tab==='match')renderMatch();
+    return;
+  }
+  if(ui.tab==='match'){const c=$('#clk');if(c)c.textContent=clockTxt();const d=$('#cd');if(d)d.textContent=countdownTxt()}
+},500);
+
+// ───────── downloads ─────────
+async function download(filename,data){
+  if(!DL){
+    try{const url=URL.createObjectURL(new Blob([data],{type:filename.endsWith('.json')?'application/json':'text/markdown'}));
+      const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);}
+    catch(e){toast('Download failed on this device.')}
+    return;
+  }
+  try{await DL.save({filename,data})}catch(e){if(e&&e.code==='declined')return;toast('Download failed. Try again in a moment.')}
+}
+function planMarkdown(){
+  const s=strat(), ps=parts(), mins=minutes();
+  let t=`# ${s.name}\n\n${S.day.opp?`vs ${S.day.opp}, `:''}${S.day.date}. ${S.day.size}-a-side, ${S.day.halfMins}-minute halves.\n`;
+  ps.forEach((p,i)=>{
+    t+=`\n## ${p.label} (${partRange(i)}), ${p.formation}\n\n`;
+    slotsOf(p).forEach((sl,k)=>{t+=`- ${sl[0]}: ${p.slots[k]?nm(p.slots[k]):'(empty)'}\n`});
+    if(i>0){const ch=changes(ps[i-1],p);if(ch.length){t+=`\nChanges:\n`;ch.forEach(c=>t+=`- ${c.text}\n`)}}
+    if(p.note)t+=`\nInstructions: ${p.note}\n`;
+  });
+  if(s.jobs.length){t+=`\n## Jobs and checks\n\n`;s.jobs.forEach(j=>t+=`- [ ] ${j.text}${j.pid&&P(j.pid)?` (${nm(j.pid)})`:''}, ${partName(j.part)}\n`)}
+  if(s.notes)t+=`\n## Notes\n\n${s.notes}\n`;
+  t+=`\n## Planned minutes\n\n`;
+  S.roster.filter(p=>isAvail(p.id)||mins[p.id]).forEach(p=>t+=`- ${p.name}: ${mins[p.id]||0}'\n`);
+  return t;
+}
+
+// ───────── actions ─────────
+const A={
+  nav(b){ui.tab=b.dataset.tab;ui.sel=null;ui.editId=null;ui.shape=null;render();window.scrollTo(0,0)},
+  avail(b){const id=b.dataset.id,a=S.day.avail;const k=a.indexOf(id);k>=0?a.splice(k,1):a.push(id);save();render()},
+  allin(){S.day.avail=S.roster.map(p=>p.id);save();render()},
+  allout(){S.day.avail=[];save();render()},
+  editp(b){ui.editId=b.dataset.id;render()},
+  savep(b){const r=b.closest('.srow'),p=P(b.dataset.id);const n=r.querySelector('[data-k=ename]').value.trim();if(n)p.name=n;p.num=r.querySelector('[data-k=enum]').value.trim();ui.editId=null;save();render()},
+  delp(b){const id=b.dataset.id;confirmBox(`Remove ${nm(id)} from the squad?`,'Remove',()=>{
+    S.roster=S.roster.filter(p=>p.id!==id);S.day.avail=S.day.avail.filter(x=>x!==id);
+    S.strategies.forEach(s=>{s.periods.forEach(p=>p.slots=p.slots.map(x=>x===id?null:x));s.jobs.forEach(j=>{if(j.pid===id)j.pid=''})});
+    ui.editId=null;save();render()})},
+  addp(){const n=$('#addName').value.trim();if(!n){$('#addName').focus();return}const id=uid();S.roster.push({id,name:n,num:$('#addNum').value.trim()});S.day.avail.push(id);save();render();$('#addName').focus()},
+  part(b){ui.partId=b.dataset.id;ui.sel=null;ui.shape=null;render()},
+  slot(b){
+    const i=+b.dataset.i, per=curPer(), sel=ui.sel;
+    if(sel&&sel.type==='player'){per.slots=per.slots.map(x=>x===sel.id?null:x);per.slots[i]=sel.id;ui.sel=null;save()}
+    else if(sel&&sel.type==='slot'){if(sel.idx!==i){const t=per.slots[i];per.slots[i]=per.slots[sel.idx];per.slots[sel.idx]=t;save()}ui.sel=null}
+    else ui.sel={type:'slot',idx:i};
+    render();
+  },
+  bench(b){
+    const id=b.dataset.id, per=curPer(), sel=ui.sel;
+    if(sel&&sel.type==='slot'){per.slots[sel.idx]=id;ui.sel=null;save()}
+    else if(sel&&sel.type==='player'&&sel.id===id)ui.sel=null;
+    else ui.sel={type:'player',id};
+    render();
+  },
+  tobench(){const per=curPer();if(ui.sel&&ui.sel.type==='slot'){per.slots[ui.sel.idx]=null;ui.sel=null;save();render()}},
+  addpart(){
+    const ps=parts(), i=ps.indexOf(curPer()), per=ps[i], end=partEnd(i);
+    let st=end-per.start>=2?Math.round((per.start+end)/2):end;
+    if(st>=fullTime()||ps.some(p=>p.start===st)){toast('No room for another part here. Change the start minutes first.');return}
+    const np={id:uid(),label:'Part '+(ps.length+1),start:st,formation:per.formation,slots:[...per.slots],note:''};
+    strat().periods.push(np);ui.partId=np.id;ui.sel=null;save();render();
+  },
+  delpart(){const per=curPer();confirmBox(`Delete ${per.label}?`,'Delete',()=>{const s=strat();s.periods=s.periods.filter(p=>p!==per);if(s.periods[0])s.periods[0].start=0;s.jobs.forEach(j=>{if(j.part===per.id)j.part='all'});ui.partId=null;ui.sel=null;save();render()})},
+  copyprev(){const ps=parts(),i=ps.indexOf(curPer());if(i<1)return;const per=ps[i];per.formation=ps[i-1].formation;per.slots=[...ps[i-1].slots];ui.sel=null;save();render()},
+  clearpart(){const per=curPer();per.slots=per.slots.map(()=>null);ui.sel=null;save();render()},
+  newstrat(){ask('Name the new plan','Plan '+String.fromCharCode(65+S.strategies.length),v=>{const s={id:uid(),name:v||'New plan',periods:newPeriods(S.day.halfMins),jobs:[],notes:''};S.strategies.push(s);S.activeId=s.id;ui.partId=null;save();render()},'Create')},
+  dupstrat(){const src=strat();ask('Name the copy',src.name+' (copy)',v=>{const s=JSON.parse(JSON.stringify(src));s.id=uid();s.name=v||src.name+' (copy)';const map={};s.periods.forEach(p=>{const n=uid();map[p.id]=n;p.id=n});s.jobs.forEach(j=>{j.id=uid();j.part=map[j.part]||'all'});S.strategies.push(s);S.activeId=s.id;ui.partId=null;save();render()},'Create')},
+  renstrat(){const s=strat();ask('Rename plan',s.name,v=>{if(v){s.name=v;save();render()}})},
+  delstrat(){const s=strat();confirmBox(`Delete the plan "${s.name}"?`,'Delete',()=>{S.strategies=S.strategies.filter(x=>x!==s);S.activeId=S.strategies[0].id;ui.partId=null;save();render()})},
+  tpl(b){const i=$('#jobText');i.value=b.dataset.v;i.focus()},
+  addjob(){const t=$('#jobText').value.trim();if(!t){$('#jobText').focus();return}strat().jobs.push({id:uid(),text:t,pid:$('#jobWho').value,part:$('#jobPart').value,done:false});save();render()},
+  jobdone(b){const j=strat().jobs.find(x=>x.id===b.dataset.id);if(j){j.done=!j.done;save();render()}},
+  jobdel(b){const s=strat();s.jobs=s.jobs.filter(x=>x.id!==b.dataset.id);save();render()},
+  jobsreset(){strat().jobs.forEach(j=>j.done=false);save();render()},
+  start1(){const m=S.match;m.phase='h1';m.accum=0;m.running=true;m.runStart=Date.now();addEvent('phase','Kick-off');ui.lastCi=0;render()},
+  pause(){const m=S.match;m.accum+=(Date.now()-m.runStart)/1000;m.running=false;save();render()},
+  resume(){const m=S.match;m.running=true;m.runStart=Date.now();save();render()},
+  ht(){const m=S.match;addEvent('phase','Half-time');m.phase='ht';m.running=false;m.accum=0;save();render()},
+  start2(){const m=S.match;m.phase='h2';m.accum=0;m.running=true;m.runStart=Date.now();addEvent('phase','Second half kick-off');render()},
+  ft(){const m=S.match;if(m.running)m.accum+=(Date.now()-m.runStart)/1000;m.running=false;addEvent('phase','Full time');m.phase='ft';save();render()},
+  reset(){confirmBox('Clear the clock, score and match log?','Clear',()=>{S.match=freshMatch();ui.lastCi=null;save();render()})},
+  goal(){
+    const {ci,ps}=matchInfo(), on=ps[ci].slots.filter(Boolean);
+    pick('Who scored?',[...on.map(id=>({v:id,t:nm(id)})),{v:'',t:'Not sure'}],v=>{addEvent('goal',v?`Goal, ${nm(v)}`:'Goal');render()});
+  },
+  oppgoal(){addEvent('opp',`Goal for ${S.day.opp||'them'}`);render()},
+  addnote(){const i=$('#evNote'),t=i.value.trim();if(!t){i.focus();return}addEvent('note',t);render()},
+  evdel(b){S.match.events=S.match.events.filter(e=>e.id!==b.dataset.id);save();render()},
+  ack(b){const ps=parts(),i=ps.findIndex(p=>p.id===b.dataset.id);if(i<1)return;changes(ps[i-1],ps[i]).forEach(c=>addEvent(c.k==='sub'?'sub':'note',c.text));S.match.acked.push(ps[i].id);save();render()},
+  dljson(){download(`match-${S.day.date}${S.day.opp?'-'+S.day.opp.replace(/[^\w-]+/g,'-'):''}.json`,JSON.stringify(S,null,2))},
+  ghsave(){ghSave(false)},
+  ghload(){ghLoad()},
+  exportall(){const d=new Date().toISOString().slice(0,10);download(`match-manager-backup-${d}.json`,JSON.stringify(S,null,2));toast('Backup exported')},
+  importpick(){const f=$('#importFile');f.value='';f.click()},
+  dlmd(){download(`${strat().name.replace(/[^\w-]+/g,'-')}.md`,planMarkdown())},
+  shapeedit(){ui.shape={layout:JSON.parse(JSON.stringify(slotsOf(curPer())))};ui.sel=null;render()},
+  shapecancel(){ui.shape=null;render()},
+  shapesaveas(){
+    const base=curPer().formation;
+    ask('Name your formation',base+' (mine)',v=>{
+      if(!v)return; if(fset()[v]){toast('That name is already used. Pick another.');return}
+      (S.custom[S.day.size]=S.custom[S.day.size]||{})[v]=ui.shape.layout;
+      curPer().formation=v; ui.shape=null; save(); render(); toast(`Saved ${v}`);
+    },'Save');
+  },
+  shapeupdate(){const f=curPer().formation;S.custom[S.day.size][f]=ui.shape.layout;ui.shape=null;save();render();toast(`Updated ${f}`)},
+  shapedel(){const f=curPer().formation;confirmBox(`Delete the formation ${f}? Parts using it switch to a standard shape.`,'Delete',()=>{delete S.custom[S.day.size][f];S.strategies.forEach(s=>s.periods.forEach(fixPeriod));ui.shape=null;save();render()})},
+  toboard(b){const ps=parts();const per=(b.dataset.id&&ps.find(p=>p.id===b.dataset.id))||curPer();if(!S.board)S.board={tokens:[],lines:[],from:''};ui.boardSrc=per.id;loadBoard(per);save();ui.tab='board';ui.shape=null;render();window.scrollTo(0,0)},
+  bload(){const per=parts().find(p=>p.id===$('#bSrc').value);if(!per)return;ui.boardSrc=per.id;loadBoard(per);save();renderBoard()},
+  btool(b){ui.tool=b.dataset.v;renderBoard()},
+  bcolor(b){ui.color=b.dataset.v;renderBoard()},
+  bundo(){S.board.lines.pop();save();renderBoard()},
+  bclear(){S.board.lines=[];save();renderBoard()},
+  bopp1(){const n=S.board.tokens.filter(t=>t.kind==='opp').length+1;S.board.tokens.push({id:uid(),kind:'opp',label:String(n),name:'',x:+(20+Math.random()*28).toFixed(1),y:+(35+Math.random()*10).toFixed(1)});save();renderBoard()},
+  boppteam(){
+    const per=parts().find(p=>p.id===ui.boardSrc)||curPer();
+    pick('Their shape',Object.keys(fset()).map(f=>({v:f,t:f})),f=>{
+      const B=S.board; B.tokens=B.tokens.filter(t=>t.kind!=='opp');
+      (fset()[f]||slotsOf(per)).forEach((sl,i)=>B.tokens.push({id:uid(),kind:'opp',label:String(i+1),name:'',x:+(68-sl[1]*.68).toFixed(1),y:100-sl[2]}));
+      save();renderBoard();
+    });
+  },
+  bball(){const B=S.board,b=B.tokens.find(t=>t.kind==='ball');if(b){b.x=34;b.y=50}else B.tokens.push({id:uid(),kind:'ball',label:'',name:'',x:34,y:50});save();renderBoard()},
+  bwipe(){confirmBox('Clear everything off the board?','Clear',()=>{S.board={tokens:[],lines:[],from:''};save();renderBoard()})},
+  bsave(){ask('Name this board',S.board.from||'Board',v=>{S.boards.unshift({id:uid(),name:v||'Board',savedAt:Date.now(),from:S.board.from||'',tokens:JSON.parse(JSON.stringify(S.board.tokens)),lines:JSON.parse(JSON.stringify(S.board.lines))});S.boards=S.boards.slice(0,40);save();renderBoard();toast('Board saved')},'Save')},
+  bopen(b){const x=S.boards.find(y=>y.id===b.dataset.id);if(!x)return;S.board={tokens:JSON.parse(JSON.stringify(x.tokens)),lines:JSON.parse(JSON.stringify(x.lines)),from:x.name};save();renderBoard();window.scrollTo(0,0);toast(`Opened ${x.name}`)},
+  bdel(b){const x=S.boards.find(y=>y.id===b.dataset.id);if(!x)return;confirmBox(`Delete the saved board "${x.name}"?`,'Delete',()=>{S.boards=S.boards.filter(y=>y!==x);save();renderBoard()})},
+  sheetpick(b){const cb=ui.sheetCb;closeSheet();cb&&cb(b.dataset.v)},
+  sheetok(){const i=$('#sheetIn'),cb=ui.sheetCb,v=i?i.value.trim():true;closeSheet();cb&&cb(v)},
+  sheetclose(){closeSheet()}
+};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const f=A[b.dataset.act];if(f)f(b)});
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter')return;
+  const id=e.target.id;
+  if(id==='addName')A.addp(); else if(id==='jobText')A.addjob(); else if(id==='evNote')A.addnote(); else if(id==='sheetIn')A.sheetok();
+});
+function field(el,commit){
+  const f=el.dataset.field,v=el.value;
+  switch(f){
+    case 'opp':S.day.opp=v;save();renderTop();break;
+    case 'date':S.day.date=v;save();break;
+    case 'half':if(commit){S.day.halfMins=Math.max(5,Math.min(60,parseInt(v)||35));save();render()}break;
+    case 'size':ui.shape=null;S.day.size=+v;S.strategies.forEach(s=>s.periods.forEach(fixPeriod));ui.sel=null;save();render();break;
+    case 'active':S.activeId=v;ui.partId=null;ui.sel=null;save();render();break;
+    case 'plabel':curPer().label=v;save();if(commit)render();break;
+    case 'pstart':if(commit){const per=curPer();let st=Math.max(1,Math.min(fullTime()-1,parseInt(v)||0));if(strat().periods.some(p=>p!==per&&p.start===st)){toast('Another part already starts then.');render();break}per.start=st;save();render()}break;
+    case 'pform':if(commit){const per=curPer();per.formation=v;fixPeriod(per);ui.sel=null;save();render()}break;
+    case 'pnote':curPer().note=v;save();break;
+    case 'snotes':strat().notes=v;save();break;
+  }
+}
+document.addEventListener('input',e=>{if(e.target.dataset&&e.target.dataset.field)field(e.target,false)});
+document.addEventListener('change',e=>{if(e.target.dataset&&e.target.dataset.field)field(e.target,true)});
+$('#sheet').addEventListener('close',()=>{ui.sheetCb=null});
+document.addEventListener('change',e=>{
+  if(e.target.id!=='importFile'||!e.target.files||!e.target.files[0])return;
+  const file=e.target.files[0], r=new FileReader();
+  r.onload=()=>{
+    let d; try{d=JSON.parse(r.result)}catch(err){toast('That file isn\'t a Match Manager backup.');return}
+    if(!d||d.v!==2||!Array.isArray(d.roster)||!Array.isArray(d.strategies)){toast('That file isn\'t a Match Manager backup.');return}
+    const np=d.strategies.length, nr=d.roster.length;
+    confirmBox(`Replace everything here with this backup (${nr} players, ${np} plan${np===1?'':'s'})?`,'Import',()=>{
+      S=normalise(d); ui.partId=null; ui.sel=null; ui.editId=null; ui.lastCi=null; save(); render(); toast('Backup imported');
+    });
+  };
+  r.onerror=()=>toast('Could not read that file.');
+  r.readAsText(file);
+});
+
+// ───────── boot ─────────
+S=normalise(loadLocal()||defaultState());
+if(!S.roster.length&&S.updatedAt===0)ui.tab='squad';
+if(!window.claude||!window.claude.use)document.body.classList.add('dl-on');
+render();
+(async()=>{
+  if(!window.claude||!window.claude.use)return;
+  try{DL=await window.claude.use('downloads');if(DL)document.body.classList.add('dl-on')}catch(e){}
+})();
+(async()=>{
+  if(!window.claude||!window.claude.use)return;
+  try{
+    DB=await window.claude.use('db'); if(!DB)return;
+    const snap=await DB.doc(DOC).get();
+    if(snap.exists){
+      const d=JSON.parse(JSON.stringify(snap.data()));
+      if(d&&d.v===2&&(d.updatedAt||0)>(S.updatedAt||0)){S=normalise(d);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}ui.partId=null;render()}
+      else if((S.updatedAt||0)>(d.updatedAt||0))pushDb();
+    } else if(S.updatedAt)pushDb();
+  }catch(e){}
+})();
+</script>
+</body>
+</html>
