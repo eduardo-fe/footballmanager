@@ -1,0 +1,215 @@
+{
+  "v": 2,
+  "updatedAt": 1790283108888,
+  "roster": [
+    {
+      "id": "5cjss5pc",
+      "name": "Isi",
+      "num": ""
+    },
+    {
+      "id": "szy9ugo8",
+      "name": "Martha S",
+      "num": ""
+    },
+    {
+      "id": "9hv3nvy6",
+      "name": "Vic",
+      "num": ""
+    },
+    {
+      "id": "teiuzrm4",
+      "name": "Isi H.",
+      "num": ""
+    },
+    {
+      "id": "ay3f2e5c",
+      "name": "Alice",
+      "num": ""
+    },
+    {
+      "id": "c4r2k105",
+      "name": "Scarlett",
+      "num": ""
+    },
+    {
+      "id": "div3nw1a",
+      "name": "Evie",
+      "num": ""
+    },
+    {
+      "id": "tltnxjgn",
+      "name": "Eva",
+      "num": ""
+    },
+    {
+      "id": "ghjhuokb",
+      "name": "Pippa",
+      "num": ""
+    },
+    {
+      "id": "jsyvdueo",
+      "name": "Leontine",
+      "num": ""
+    },
+    {
+      "id": "ez8hx9ql",
+      "name": "Charlotte",
+      "num": ""
+    },
+    {
+      "id": "rgiu0zw2",
+      "name": "Martha C",
+      "num": ""
+    },
+    {
+      "id": "ra6hj37a",
+      "name": "Ellen",
+      "num": ""
+    },
+    {
+      "id": "m2wygmwh",
+      "name": "Silvie",
+      "num": ""
+    },
+    {
+      "id": "m2tj1frj",
+      "name": "Polly",
+      "num": ""
+    },
+    {
+      "id": "g7adexjf",
+      "name": "Rosie",
+      "num": ""
+    },
+    {
+      "id": "p69kjfet",
+      "name": "Lyla",
+      "num": ""
+    }
+  ],
+  "day": {
+    "opp": "Alti ",
+    "date": "2026-09-24",
+    "halfMins": 35,
+    "size": 11,
+    "avail": [
+      "5cjss5pc",
+      "szy9ugo8",
+      "9hv3nvy6",
+      "teiuzrm4",
+      "ay3f2e5c",
+      "c4r2k105",
+      "div3nw1a",
+      "tltnxjgn",
+      "ghjhuokb",
+      "jsyvdueo",
+      "ez8hx9ql",
+      "rgiu0zw2",
+      "ra6hj37a",
+      "m2wygmwh",
+      "m2tj1frj",
+      "g7adexjf",
+      "p69kjfet"
+    ]
+  },
+  "strategies": [
+    {
+      "id": "gxlg5xr9",
+      "name": "Plan A",
+      "periods": [
+        {
+          "id": "ft1b21a9",
+          "label": "Part 1",
+          "start": 0,
+          "formation": "4-1-4-1",
+          "slots": [
+            "szy9ugo8",
+            "ghjhuokb",
+            "g7adexjf",
+            "tltnxjgn",
+            "m2tj1frj",
+            "5cjss5pc",
+            "div3nw1a",
+            "9hv3nvy6",
+            "ez8hx9ql",
+            "teiuzrm4",
+            "p69kjfet"
+          ],
+          "note": ""
+        },
+        {
+          "id": "gsj7wxc3",
+          "label": "Part 2",
+          "start": 18,
+          "formation": "4-1-4-1",
+          "slots": [
+            "szy9ugo8",
+            "ghjhuokb",
+            "ra6hj37a",
+            "tltnxjgn",
+            "m2tj1frj",
+            "5cjss5pc",
+            "div3nw1a",
+            "9hv3nvy6",
+            "ez8hx9ql",
+            "c4r2k105",
+            "p69kjfet"
+          ],
+          "note": ""
+        },
+        {
+          "id": "mvdi7ok3",
+          "label": "Part 3",
+          "start": 35,
+          "formation": "4-4-2",
+          "slots": [
+            "szy9ugo8",
+            "ghjhuokb",
+            "m2wygmwh",
+            "tltnxjgn",
+            "m2tj1frj",
+            "g7adexjf",
+            "5cjss5pc",
+            "9hv3nvy6",
+            "c4r2k105",
+            "ay3f2e5c",
+            "jsyvdueo"
+          ],
+          "note": ""
+        },
+        {
+          "id": "f1d0azvc",
+          "label": "Part 4",
+          "start": 53,
+          "formation": "4-4-2",
+          "slots": [
+            "szy9ugo8",
+            "rgiu0zw2",
+            "ghjhuokb",
+            "tltnxjgn",
+            "m2tj1frj",
+            "g7adexjf",
+            "9hv3nvy6",
+            "ez8hx9ql",
+            "jsyvdueo",
+            "p69kjfet",
+            "ay3f2e5c"
+          ],
+          "note": ""
+        }
+      ],
+      "jobs": [],
+      "notes": ""
+    }
+  ],
+  "activeId": "gxlg5xr9",
+  "match": {
+    "phase": "pre",
+    "running": false,
+    "runStart": 0,
+    "accum": 0,
+    "events": [],
+    "acked": []
+  }
+}
