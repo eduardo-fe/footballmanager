@@ -415,7 +415,8 @@ function renderSquad(){
     <p class="lead">Export saves your squad, every plan, jobs and notes as one file. Import that file on another device or browser to carry on where you left off.</p>
     <div class="row"><button class="btn dl-only" data-act="exportall">Export everything</button><button class="btn" data-act="importpick">Import from file</button></div>
     <input type="file" id="importFile" accept=".json,application/json" hidden>
-  </div>`;
+  </div>
+  ${ghCardHTML()}`;
 }
 
 // ───────── plan logic ─────────
@@ -477,6 +478,84 @@ function shapePitchHTML(per){
   });
   return h+'</div>';
 }
+
+// ───────── GitHub sync (standalone site only) ─────────
+const GHKEY='match-manager-github';
+function ghCfg(){try{return Object.assign({repo:'',path:'data/match-manager.json',branch:'main',token:'',sha:'',last:''},JSON.parse(localStorage.getItem(GHKEY)||'{}'))}catch(e){return {repo:'',path:'data/match-manager.json',branch:'main',token:'',sha:'',last:''}}}
+function ghPut(c){try{localStorage.setItem(GHKEY,JSON.stringify(c))}catch(e){}}
+function ghCardHTML(){
+  if(window.claude&&window.claude.use)return '';
+  const c=ghCfg();
+  return `<div class="card">
+    <h2>Sync with GitHub</h2>
+    <p class="lead">Save everything to a file in a GitHub repository and load it on any device. The token stays on this device and is never included in exports.</p>
+    <div class="grid2">
+      <div class="field"><label for="ghRepo">Repository (owner/name)</label><input class="in" id="ghRepo" value="${esc(c.repo)}" placeholder="eduardo-fe/footballmanager-data" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
+      <div class="field"><label for="ghBranch">Branch</label><input class="in" id="ghBranch" value="${esc(c.branch)}" autocapitalize="off" spellcheck="false"></div>
+    </div>
+    <div class="field" style="margin-top:12px"><label for="ghPath">File in the repository</label><input class="in" id="ghPath" value="${esc(c.path)}" autocapitalize="off" spellcheck="false"></div>
+    <div class="field" style="margin-top:12px"><label for="ghToken">Access token (needed to save, and to load from a private repository)</label><input class="in" id="ghToken" type="password" value="${esc(c.token)}" autocomplete="off" placeholder="github_pat_..."></div>
+    <div class="row" style="margin-top:12px"><button class="btn primary" data-act="ghsave">Save to GitHub</button><button class="btn" data-act="ghload">Load from GitHub</button></div>
+    <p class="lead" id="ghStatus" style="margin:10px 0 0">${c.last?esc(c.last):'Not synced yet on this device.'}</p>
+  </div>`;
+}
+function ghStatus(msg){const c=ghCfg();c.last=msg;ghPut(c);const el=$('#ghStatus');if(el)el.textContent=msg}
+function b64encode(str){const b=new TextEncoder().encode(str);let s='';for(let i=0;i<b.length;i+=0x8000)s+=String.fromCharCode.apply(null,b.subarray(i,i+0x8000));return btoa(s)}
+function b64decode(b64){const bin=atob(String(b64).replace(/\s/g,''));const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new TextDecoder().decode(u)}
+function ghUrl(c){return `https://api.github.com/repos/${c.repo.trim().replace(/^https?:\/\/github\.com\//,'').replace(/\/+$/,'')}/contents/${c.path.trim().replace(/^\/+/,'').split('/').map(encodeURIComponent).join('/')}`}
+function ghHeaders(c){const h={'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'};if(c.token.trim())h.Authorization='Bearer '+c.token.trim();return h}
+function ghErr(status){
+  if(status===401)return 'GitHub rejected the token. Check it hasn\'t expired.';
+  if(status===403)return 'The token doesn\'t have permission for this repository, or GitHub is rate-limiting. Check the token has Contents: read and write.';
+  if(status===404)return 'Repository or file not found. Check the name, branch and file path. A private repository needs a token.';
+  if(status===409||status===422)return 'GitHub refused the save because the file changed. Load it first, then save again.';
+  return 'GitHub returned an error ('+status+').';
+}
+async function ghFetchRemote(c){
+  const r=await fetch(ghUrl(c)+'?ref='+encodeURIComponent(c.branch.trim()||'main')+'&t='+Date.now(),{headers:ghHeaders(c),cache:'no-store'});
+  if(r.status===404)return null;
+  if(!r.ok)throw {status:r.status};
+  return r.json();
+}
+async function ghLoad(){
+  const c=ghCfg(); if(!c.repo.trim()){toast('Enter the repository first.');return}
+  ghStatus('Loading from GitHub…');
+  try{
+    const f=await ghFetchRemote(c);
+    if(!f){ghStatus(ghErr(404));return}
+    let d; try{d=JSON.parse(b64decode(f.content))}catch(e){ghStatus('That file isn\'t a Match Manager backup.');return}
+    if(!d||d.v!==2||!Array.isArray(d.roster)||!Array.isArray(d.strategies)){ghStatus('That file isn\'t a Match Manager backup.');return}
+    confirmBox(`Replace everything here with the GitHub copy (${d.roster.length} players, ${d.strategies.length} plan${d.strategies.length===1?'':'s'})?`,'Load',()=>{
+      S=normalise(d); ui.partId=null; ui.sel=null; ui.editId=null; ui.lastCi=null;
+      const c2=ghCfg(); c2.sha=f.sha; ghPut(c2); save(); render();
+      ghStatus('Loaded from GitHub at '+new Date().toLocaleString()+'.'); toast('Loaded from GitHub');
+    });
+    ghStatus('Found the file on GitHub. Confirm to load it.');
+  }catch(e){ghStatus(e&&e.status?ghErr(e.status):'Couldn\'t reach GitHub. Check your connection.')}
+}
+async function ghSave(force){
+  const c=ghCfg(); if(!c.repo.trim()){toast('Enter the repository first.');return}
+  if(!c.token.trim()){toast('Saving needs an access token.');$('#ghToken')&&$('#ghToken').focus();return}
+  ghStatus('Saving to GitHub…');
+  try{
+    const f=await ghFetchRemote(c), remoteSha=f?f.sha:null;
+    if(remoteSha&&remoteSha!==c.sha&&!force){
+      confirmBox('The GitHub copy has changed since this device last loaded or saved it. Save anyway and overwrite it?','Overwrite',()=>ghSave(true));
+      ghStatus('The GitHub copy has changed. Load it first, or confirm to overwrite.');
+      return;
+    }
+    const body={message:`Update match manager data (${new Date().toISOString().slice(0,16).replace('T',' ')})`,content:b64encode(JSON.stringify(S,null,2)),branch:c.branch.trim()||'main'};
+    if(remoteSha)body.sha=remoteSha;
+    const r=await fetch(ghUrl(c),{method:'PUT',headers:Object.assign({'Content-Type':'application/json'},ghHeaders(c)),body:JSON.stringify(body)});
+    if(!r.ok){ghStatus(ghErr(r.status));return}
+    const j=await r.json(); const c2=ghCfg(); c2.sha=j.content&&j.content.sha||''; ghPut(c2);
+    ghStatus('Saved to GitHub at '+new Date().toLocaleString()+'.'); toast('Saved to GitHub');
+  }catch(e){ghStatus(e&&e.status?ghErr(e.status):'Couldn\'t reach GitHub. Check your connection.')}
+}
+document.addEventListener('input',e=>{
+  const map={ghRepo:'repo',ghBranch:'branch',ghPath:'path',ghToken:'token'}, k=map[e.target.id]; if(!k)return;
+  const c=ghCfg(); if(k!=='token'&&c[k]!==e.target.value)c.sha=''; c[k]=e.target.value; ghPut(c);
+});
 
 // ───────── render: plan ─────────
 function renderPlan(){
@@ -849,6 +928,8 @@ const A={
   evdel(b){S.match.events=S.match.events.filter(e=>e.id!==b.dataset.id);save();render()},
   ack(b){const ps=parts(),i=ps.findIndex(p=>p.id===b.dataset.id);if(i<1)return;changes(ps[i-1],ps[i]).forEach(c=>addEvent(c.k==='sub'?'sub':'note',c.text));S.match.acked.push(ps[i].id);save();render()},
   dljson(){download(`match-${S.day.date}${S.day.opp?'-'+S.day.opp.replace(/[^\w-]+/g,'-'):''}.json`,JSON.stringify(S,null,2))},
+  ghsave(){ghSave(false)},
+  ghload(){ghLoad()},
   exportall(){const d=new Date().toISOString().slice(0,10);download(`match-manager-backup-${d}.json`,JSON.stringify(S,null,2));toast('Backup exported')},
   importpick(){const f=$('#importFile');f.value='';f.click()},
   dlmd(){download(`${strat().name.replace(/[^\w-]+/g,'-')}.md`,planMarkdown())},
