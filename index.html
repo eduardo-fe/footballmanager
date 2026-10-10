@@ -44,8 +44,8 @@ section{display:none}
 section.on{display:block}
 
 .tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
-.tabs-in{max-width:760px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
-.tabs button{min-height:62px;border:none;background:none;font-size:16px;font-weight:700;font-stretch:85%;color:var(--muted);border-top:4px solid transparent;cursor:pointer}
+.tabs-in{max-width:760px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr)}
+.tabs button{min-height:62px;border:none;background:none;font-size:15px;padding:0 2px;font-weight:700;font-stretch:85%;color:var(--muted);border-top:4px solid transparent;cursor:pointer}
 .tabs button.on{color:var(--ink);border-top-color:var(--bib)}
 
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0}
@@ -200,6 +200,39 @@ div.slot{cursor:default}
 .sheet-sec{font-size:14px;font-weight:700;color:var(--muted);margin:10px 0 6px}
 .mrow .plan{font-size:13px;color:var(--muted);font-weight:600;margin-left:4px}
 .mrow.act{grid-template-columns:minmax(90px,130px) 1fr 86px}
+/* season */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
+.stats b{display:block;font-size:40px;font-weight:800;font-stretch:70%;line-height:1.05}
+.stats span{font-size:14px;color:var(--muted);font-weight:600}
+.srow2{display:grid;grid-template-columns:minmax(84px,120px) 1fr auto;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.srow2:last-child{border-bottom:none}
+.srow2 .bar{height:14px;background:var(--soft);border-radius:7px;overflow:hidden}
+.srow2 .bar i{display:block;height:100%;background:var(--go);border-radius:0 4px 4px 0}
+.srow2 .v{font-size:14px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.srow2 .v b{color:var(--ink);font-size:17px;font-stretch:78%}
+.tbl{width:100%;border-collapse:collapse;font-size:16px}
+.tbl th{text-align:right;font-size:14px;color:var(--muted);font-weight:600;padding:6px 4px;border-bottom:1px solid var(--line)}
+.tbl th:first-child,.tbl td:first-child{text-align:left}
+.tbl td{text-align:right;padding:8px 4px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.tbl tr:last-child td{border-bottom:none}
+.band{display:grid;grid-template-columns:128px 1fr;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.band:last-child{border-bottom:none}
+.band .lbl{font-size:15px;font-weight:600;white-space:nowrap}
+.band .bars{display:grid;gap:2px}
+.band .b{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--muted)}
+.band .b i{display:block;height:12px;border-radius:0 4px 4px 0}
+.band .for i{background:var(--go)}
+.band .ag i{background:var(--red)}
+.legend{display:flex;gap:16px;font-size:14px;color:var(--muted);margin:0 0 8px}
+.legend span::before{content:"";display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px;background:var(--go)}
+.legend span.ag::before{background:var(--red)}
+.game{display:flex;align-items:center;gap:12px;width:100%;background:none;border:none;border-bottom:1px solid var(--line);padding:10px 0;text-align:left;cursor:pointer;min-height:56px}
+.game:last-child{border-bottom:none}
+.game .res{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;font-weight:800;color:#fff;flex:none}
+.game .res.W{background:var(--go)} .game .res.D{background:var(--muted)} .game .res.L{background:var(--red)}
+.game .x{flex:1;font-size:17px}
+.game .x small{display:block;color:var(--muted);font-size:14px}
+.game .sc{font-weight:800;font-stretch:75%;font-size:22px;font-variant-numeric:tabular-nums}
 dialog.sheet{border:none;border-radius:16px;padding:18px;width:min(520px,94vw);background:var(--card);color:var(--ink)}
 dialog.sheet::backdrop{background:rgba(0,0,0,.5)}
 dialog.sheet h3{margin:0 0 12px;font-size:21px}
@@ -220,6 +253,7 @@ dialog.sheet h3{margin:0 0 12px;font-size:21px}
   <section id="notes"></section>
   <section id="board"></section>
   <section id="match"></section>
+  <section id="season"></section>
 </main>
 
 <nav class="tabs" aria-label="Sections"><div class="tabs-in">
@@ -228,6 +262,7 @@ dialog.sheet h3{margin:0 0 12px;font-size:21px}
   <button data-act="nav" data-tab="notes">Jobs</button>
   <button data-act="nav" data-tab="board">Board</button>
   <button data-act="nav" data-tab="match">Match</button>
+  <button data-act="nav" data-tab="season">Season</button>
 </div></nav>
 
 <dialog class="sheet" id="sheet"><h3 id="sheetT"></h3><div id="sheetB"></div></dialog>
@@ -306,7 +341,7 @@ function defaultState(){
   return {v:2,updatedAt:0,roster:[],
     day:{opp:'',date:today(),halfMins:35,size:11,avail:[]},
     strategies:[{id:sid,name:'Plan A',periods:newPeriods(35),jobs:[],notes:''}],
-    activeId:sid, match:freshMatch(), custom:{}, board:null, boards:[]};
+    activeId:sid, match:freshMatch(), custom:{}, board:null, boards:[], history:[]};
 }
 function P(id){return S.roster.find(p=>p.id===id)}
 function nm(id){return P(id)?.name||'?'}
@@ -335,6 +370,7 @@ function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');
 // ───────── persistence ─────────
 function save(){
   S.updatedAt=Date.now();
+  try{if(S.match&&S.match.phase==='ft'&&S.match.archivedId)upsertRecord()}catch(e){}
   try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
   clearTimeout(saveT); saveT=setTimeout(pushDb,700);
 }
@@ -347,7 +383,7 @@ function loadLocal(){try{const r=localStorage.getItem(KEY);if(r){const d=JSON.pa
 function normalise(d){
   const base=defaultState();
   d.day=Object.assign(base.day,d.day||{}); d.match=Object.assign(freshMatch(),d.match||{});
-  d.roster=d.roster||[]; d.custom=d.custom||{}; d.boards=d.boards||[]; d.board=d.board||null; if(!d.strategies||!d.strategies.length){d.strategies=base.strategies;d.activeId=base.activeId}
+  d.roster=d.roster||[]; d.history=d.history||[]; d.custom=d.custom||{}; d.boards=d.boards||[]; d.board=d.board||null; if(!d.strategies||!d.strategies.length){d.strategies=base.strategies;d.activeId=base.activeId}
   d.strategies.forEach(s=>{s.jobs=s.jobs||[];s.notes=s.notes||'';s.periods=s.periods&&s.periods.length?s.periods:newPeriods(d.day.halfMins)});
   return d;
 }
@@ -369,7 +405,7 @@ function confirmBox(text,okLabel,cb){
 
 // ───────── render: header ─────────
 function renderTop(){
-  const titles={squad:'Match day',plan:'Plan',notes:'Jobs and notes',board:'Whiteboard',match:'Match'};
+  const titles={squad:'Match day',plan:'Plan',notes:'Jobs and notes',board:'Whiteboard',match:'Match',season:'Season'};
   $('#title').textContent=titles[ui.tab];
   const {us,them}=score();
   const vs=S.day.opp?`vs ${esc(S.day.opp)}`:'Opponent not set';
@@ -377,7 +413,7 @@ function renderTop(){
   document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===ui.tab));
   document.querySelectorAll('main section').forEach(s=>s.classList.toggle('on',s.id===ui.tab));
 }
-function render(){renderTop();({squad:renderSquad,plan:renderPlan,notes:renderNotes,board:renderBoard,match:renderMatch})[ui.tab]();}
+function render(){renderTop();({squad:renderSquad,plan:renderPlan,notes:renderNotes,board:renderBoard,match:renderMatch,season:renderSeason})[ui.tab]();}
 
 // ───────── render: squad ─────────
 function renderSquad(){
@@ -800,7 +836,7 @@ function countdownTxt(){
   if(ph==='h1'&&t>=H)return t===H?'at half-time':`${mmss(t-H)} into the 2nd half`;
   return 'in '+mmss(t-eff);
 }
-function addEvent(type,text,extra,t){S.match.events.push(Object.assign({id:uid(),t:t==null?Math.floor(clockSec()):t,type,text},extra||{}));save()}
+function addEvent(type,text,extra,t){S.match.events.push(Object.assign({id:uid(),t:t==null?Math.floor(clockSec()):t,type,text,ph:S.match.phase},extra||{}));save()}
 // when a change "actually" happened: now, or N minutes ago (not before the current half started)
 function whenT(){
   const now=Math.floor(clockSec()), H=S.day.halfMins*60, ph=S.match.phase;
@@ -859,6 +895,113 @@ function remap(fromF,fromSlots,toF){
   return out;
 }
 function sameLineup(a,b){return a.formation===b.formation&&a.slots.join()===b.slots.join()}
+
+// ───────── season ─────────
+function freezeMatch(){
+  const m=S.match; if(!m.archivedId)m.archivedId=uid();
+  m.meta={date:S.day.date,opp:S.day.opp,size:S.day.size,halfMins:S.day.halfMins,plan:strat().name,avail:[...S.day.avail]};
+}
+function upsertRecord(){
+  const m=S.match, meta=m.meta||{}, H=(meta.halfMins||S.day.halfMins)*60;
+  const st=startLineup(), secs=actualMinutes(), evs=sortedEvents();
+  const end=Math.max(Math.floor(clockSec()),2*H);
+  const segs=[]; let f=st.formation, from=0;
+  evs.forEach(e=>{if(e.type==='lineup'&&e.formation&&e.formation!==f){if(e.t>from)segs.push({f,from,to:e.t});f=e.formation;from=e.t}});
+  segs.push({f,from,to:end});
+  const ids=new Set([...st.slots.filter(Boolean),...Object.keys(secs),...(meta.avail||[])]);
+  const names={}; ids.forEach(id=>{if(P(id))names[id]=P(id).name});
+  const prev=(S.history.find(r=>r.id===m.archivedId)||{}).names||{};
+  const rec={id:m.archivedId,date:meta.date,opp:meta.opp||'',size:meta.size,halfMins:meta.halfMins,plan:meta.plan||'',
+    avail:meta.avail||[],starters:st.slots.filter(Boolean),secs:Object.fromEntries(Object.entries(secs).map(([k,v])=>[k,Math.round(v)])),
+    segs,end,us:evs.filter(e=>e.type==='goal').length,them:evs.filter(e=>e.type==='opp').length,
+    goals:evs.filter(e=>e.type==='goal'||e.type==='opp').map(e=>({t:e.t,ph:e.ph||'',us:e.type==='goal',pid:e.pid||null})),
+    events:evs.map(e=>({t:e.t,type:e.type,text:e.text})),names:Object.assign({},prev,names)};
+  const i=S.history.findIndex(r=>r.id===rec.id);
+  if(i>=0)S.history[i]=rec; else S.history.unshift(rec);
+  S.history.sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+}
+function recName(r,id){return (P(id)&&P(id).name)||r.names[id]||'Former player'}
+function resultOf(r){return r.us>r.them?'W':r.us<r.them?'L':'D'}
+function bandOf(r,g){
+  const H=r.halfMins*60; let second=g.ph?(g.ph==='h2'||g.ph==='ft'||g.ph==='ht'):g.t>=H;
+  const into=second?Math.max(0,g.t-H):Math.min(g.t,H-1);
+  return (second?3:0)+(into<600?0:into<1200?1:2);
+}
+function seasonStats(){
+  const H=S.history, pl={}, forms={}, bands=Array.from({length:6},()=>({f:0,a:0}));
+  const touch=id=>pl[id]||(pl[id]={secs:0,games:0,starts:0,avail:0,availSecs:0,goals:0});
+  H.forEach(r=>{
+    const len=r.end||r.halfMins*120;
+    r.avail.forEach(id=>{const p=touch(id);p.avail++;p.availSecs+=len});
+    Object.entries(r.secs).forEach(([id,v])=>{const p=touch(id);p.secs+=v;if(v>0)p.games++});
+    r.starters.forEach(id=>touch(id).starts++);
+    r.goals.forEach(g=>{if(g.us&&g.pid)touch(g.pid).goals++;const b=bandOf(r,g);g.us?bands[b].f++:bands[b].a++});
+    r.segs.forEach(sg=>{const k=r.size+'-a-side '+sg.f, F=forms[k]||(forms[k]={f:sg.f,size:r.size,secs:0,gf:0,ga:0,games:new Set()});
+      F.secs+=sg.to-sg.from;F.games.add(r.id);
+      r.goals.forEach(g=>{if(g.t>=sg.from&&(g.t<sg.to||sg===r.segs[r.segs.length-1]))g.us?F.gf++:F.ga++})});
+  });
+  return {pl,forms:Object.values(forms).sort((a,b)=>b.secs-a.secs),bands};
+}
+function renderSeason(){
+  const H=S.history;
+  if(!H.length){$('#season').innerHTML=`<div class="card"><h2>No matches yet</h2><p class="lead" style="margin:0">Each match is added here automatically when you press Full time on the Match tab.</p></div>`;return}
+  const w=H.filter(r=>resultOf(r)==='W').length,d=H.filter(r=>resultOf(r)==='D').length,l=H.length-w-d;
+  const gf=H.reduce((a,r)=>a+r.us,0),ga=H.reduce((a,r)=>a+r.them,0);
+  const {pl,forms,bands}=seasonStats();
+  const anyName=id=>{for(const r of H){if(r.names[id])return recName(r,id)}return nm(id)};
+  const rows=Object.entries(pl).filter(([id,p])=>p.avail||p.secs).map(([id,p])=>({id,name:anyName(id),...p,share:p.availSecs?p.secs/p.availSecs:0})).sort((a,b)=>b.secs-a.secs);
+  const bandLbl=['1st half 0–10\'','1st half 10–20\'','1st half 20\'+','2nd half 0–10\'','2nd half 10–20\'','2nd half 20\'+'];
+  const bmax=Math.max(1,...bands.map(b=>Math.max(b.f,b.a)));
+  $('#season').innerHTML=`
+  <div class="card">
+    <div class="stats"><div><b>${H.length}</b><span>Played</span></div><div><b>${w}</b><span>Won</span></div><div><b>${d}</b><span>Drawn</span></div><div><b>${l}</b><span>Lost</span></div></div>
+    <p class="lead" style="margin:12px 0 0;text-align:center">Goals scored ${gf}, conceded ${ga}</p>
+  </div>
+  <div class="card">
+    <h2>Minutes per player</h2>
+    <p class="lead">Bar shows the share of minutes played in the games she was available for.</p>
+    ${rows.map(p=>`<div class="srow2" title="${esc(p.name)}: ${Math.round(p.secs/60)} minutes in ${p.games} game${p.games===1?'':'s'}, ${p.starts} start${p.starts===1?'':'s'}, available for ${p.avail}"><span>${esc(p.name)}</span><span class="bar" role="img" aria-label="${Math.round(p.share*100)} percent of available minutes"><i style="width:${Math.min(100,p.share*100)}%"></i></span><span class="v"><b>${Math.round(p.secs/60)}'</b> ${Math.round(p.share*100)}%<br>${p.games} of ${p.avail} games${p.goals?`, ${p.goals} goal${p.goals===1?'':'s'}`:''}</span></div>`).join('')}
+  </div>
+  <div class="card">
+    <h2>By formation</h2>
+    <p class="lead">Goals while each shape was on the pitch.${H.length<6?' Small numbers so far, so read these loosely.':''}</p>
+    <table class="tbl"><thead><tr><th>Formation</th><th>Minutes</th><th>Scored</th><th>Conceded</th></tr></thead><tbody>
+    ${forms.map(F=>`<tr><td>${esc(F.f)}${new Set(H.map(r=>r.size)).size>1?` <span class="tag plain">${F.size}s</span>`:''}</td><td>${Math.round(F.secs/60)}'</td><td>${F.gf}</td><td>${F.ga}</td></tr>`).join('')}
+    </tbody></table>
+  </div>
+  <div class="card">
+    <h2>When goals happen</h2>
+    <div class="legend"><span>Scored</span><span class="ag">Conceded</span></div>
+    ${bands.map((b,i)=>`<div class="band"><span class="lbl">${bandLbl[i]}</span><span class="bars"><span class="b for" title="Scored ${b.f}"><i style="width:${b.f/bmax*100}%"></i>${b.f}</span><span class="b ag" title="Conceded ${b.a}"><i style="width:${b.a/bmax*100}%"></i>${b.a}</span></span></div>`).join('')}
+  </div>
+  <div class="card">
+    <h2>Matches</h2>
+    ${H.map(r=>`<button class="game" data-act="game" data-id="${r.id}"><span class="res ${resultOf(r)}" aria-label="${{W:'Won',D:'Drawn',L:'Lost'}[resultOf(r)]}">${resultOf(r)}</span><span class="x">${r.opp?'vs '+esc(r.opp):'Opponent not set'}<small>${esc(r.date||'')}${r.plan?', '+esc(r.plan):''}</small></span><span class="sc">${r.us}–${r.them}</span></button>`).join('')}
+  </div>
+  <div class="row dl-only" style="margin:12px 0"><button class="btn" data-act="dlseason">Download season (CSV)</button></div>`;
+}
+function gameSheet(r){
+  const ids=Object.keys(r.secs).filter(id=>r.secs[id]>0).sort((a,b)=>r.secs[b]-r.secs[a]);
+  const benchOnly=r.avail.filter(id=>!(r.secs[id]>0));
+  sheet(`${r.opp?'vs '+r.opp:'Match'}, ${r.us}–${r.them}`,`
+    <p class="lead">${esc(r.date||'')}${r.plan?', '+esc(r.plan):''}. ${r.segs.map(sg=>`${esc(sg.f)} ${Math.floor(sg.from/60)}–${Math.floor(sg.to/60)}'`).join(', ')}</p>
+    <div class="sheet-sec">Minutes</div>
+    ${ids.map(id=>`<div class="srow2"><span>${esc(recName(r,id))}</span><span class="bar"><i style="width:${Math.min(100,r.secs[id]/(r.end||1)*100)}%"></i></span><span class="v"><b>${Math.round(r.secs[id]/60)}'</b>${r.starters.includes(id)?' started':''}</span></div>`).join('')}
+    ${benchOnly.length?`<p class="none">Didn't play: ${esc(benchOnly.map(id=>recName(r,id)).join(', '))}</p>`:''}
+    <div class="sheet-sec">Log</div>
+    ${r.events.map(e=>`<div class="ev ${e.type}"><span class="t">${mmss(e.t)}</span><span class="x">${esc(e.text)}</span></div>`).join('')}
+    <div class="row" style="margin-top:14px"><button class="btn" data-act="sheetclose">Close</button><button class="btn warn" data-act="gamedel" data-id="${r.id}">Delete from season</button></div>`,null);
+}
+function seasonCSV(){
+  const q=v=>{v=String(v??'');return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+  const out=[['date','opponent','plan','result','score_us','score_them','player','available','started','minutes','goals'].join(',')];
+  [...S.history].reverse().forEach(r=>{
+    const ids=new Set([...r.avail,...Object.keys(r.secs)]);
+    ids.forEach(id=>{const g=r.goals.filter(x=>x.us&&x.pid===id).length;
+      out.push([r.date,r.opp,r.plan,resultOf(r),r.us,r.them,recName(r,id),r.avail.includes(id)?1:0,r.starters.includes(id)?1:0,Math.round((r.secs[id]||0)/60),g].map(q).join(','))});
+  });
+  return out.join('\n');
+}
 
 // ───────── render: match ─────────
 function renderMatch(){
@@ -939,7 +1082,7 @@ setInterval(()=>{
 // ───────── downloads ─────────
 async function download(filename,data){
   if(!DL){
-    try{const url=URL.createObjectURL(new Blob([data],{type:filename.endsWith('.json')?'application/json':'text/markdown'}));
+    try{const url=URL.createObjectURL(new Blob([data],{type:filename.endsWith('.json')?'application/json':filename.endsWith('.csv')?'text/csv':'text/markdown'}));
       const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);}
     catch(e){toast('Download failed on this device.')}
     return;
@@ -1021,11 +1164,11 @@ const A={
   resume(){const m=S.match;m.running=true;m.runStart=Date.now();save();render()},
   ht(){const m=S.match;addEvent('phase','Half-time');m.phase='ht';m.running=false;m.accum=0;save();render()},
   start2(){const m=S.match;m.phase='h2';m.accum=0;m.running=true;m.runStart=Date.now();addEvent('phase','Second half kick-off');render()},
-  ft(){const m=S.match;if(m.running)m.accum+=(Date.now()-m.runStart)/1000;m.running=false;addEvent('phase','Full time');m.phase='ft';save();render()},
-  reset(){confirmBox('Clear the clock, score and match log?','Clear',()=>{S.match=freshMatch();ui.lastCi=null;save();render()})},
+  ft(){const m=S.match;if(m.running)m.accum+=(Date.now()-m.runStart)/1000;m.running=false;addEvent('phase','Full time');m.phase='ft';freezeMatch();save();render();toast('Added to the season')},
+  reset(){const live2=['h1','ht','h2'].includes(S.match.phase);confirmBox(live2?'Clear the clock, score and log? This match hasn\'t reached full time, so it won\'t be added to the season.':'Start a new match? This one is already saved in the Season tab.',live2?'Clear':'New match',()=>{S.match=freshMatch();ui.lastCi=null;save();render()})},
   goal(){
     const on=live().slots.filter(Boolean);
-    pick('Who scored?',[...on.map(id=>({v:id,t:nm(id)})),{v:'',t:'Not sure'}],v=>{addEvent('goal',v?`Goal, ${nm(v)}`:'Goal');render()});
+    pick('Who scored?',[...on.map(id=>({v:id,t:nm(id)})),{v:'',t:'Not sure'}],v=>{addEvent('goal',v?`Goal, ${nm(v)}`:'Goal',{pid:v||null});render()});
   },
   oppgoal(){addEvent('opp',`Goal for ${S.day.opp||'them'}`);render()},
   addnote(){const i=$('#evNote'),t=i.value.trim();if(!t){i.focus();return}addEvent('note',t);render()},
@@ -1121,6 +1264,9 @@ const A={
   bsave(){ask('Name this board',S.board.from||'Board',v=>{S.boards.unshift({id:uid(),name:v||'Board',savedAt:Date.now(),from:S.board.from||'',tokens:JSON.parse(JSON.stringify(S.board.tokens)),lines:JSON.parse(JSON.stringify(S.board.lines))});S.boards=S.boards.slice(0,40);save();renderBoard();toast('Board saved')},'Save')},
   bopen(b){const x=S.boards.find(y=>y.id===b.dataset.id);if(!x)return;S.board={tokens:JSON.parse(JSON.stringify(x.tokens)),lines:JSON.parse(JSON.stringify(x.lines)),from:x.name};save();renderBoard();window.scrollTo(0,0);toast(`Opened ${x.name}`)},
   bdel(b){const x=S.boards.find(y=>y.id===b.dataset.id);if(!x)return;confirmBox(`Delete the saved board "${x.name}"?`,'Delete',()=>{S.boards=S.boards.filter(y=>y!==x);save();renderBoard()})},
+  game(b){const r=S.history.find(x=>x.id===b.dataset.id);if(r)gameSheet(r)},
+  gamedel(b){const r=S.history.find(x=>x.id===b.dataset.id);if(!r)return;confirmBox(`Delete the match ${r.opp?'vs '+r.opp:''} on ${r.date} from the season?`,'Delete',()=>{S.history=S.history.filter(x=>x!==r);if(S.match.archivedId===r.id){S.match.archivedId=null}save();render()})},
+  dlseason(){download(`season-${today()}.csv`,seasonCSV())},
   sheetpick(b){const cb=ui.sheetCb;closeSheet();cb&&cb(b.dataset.v)},
   sheetok(){const i=$('#sheetIn'),cb=ui.sheetCb,v=i?i.value.trim():true;closeSheet();cb&&cb(v)},
   sheetclose(){closeSheet()}
@@ -1170,6 +1316,7 @@ document.addEventListener('change',e=>{
 ghFromHash();
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 S=normalise(loadLocal()||defaultState());
+if(S.match.phase==='ft'&&!S.match.archivedId){try{freezeMatch();upsertRecord()}catch(e){}}
 if(!S.roster.length&&S.updatedAt===0)ui.tab='squad';
 if(!window.claude||!window.claude.use)document.body.classList.add('dl-on');
 render();
